@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lanjut_nanti/core/database/app_database.dart';
 import 'package:lanjut_nanti/core/ids/id_generator.dart';
 import 'package:lanjut_nanti/core/links/link_launcher.dart';
@@ -260,8 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     if (result.status != BackupRestoreStatus.preview ||
         result.preview == null) {
-      if (result.message != null &&
-          result.status != BackupRestoreStatus.cancelled) {
+      if (result.message != null) {
         _showRestoreMessage(result.message!);
       }
       return;
@@ -462,19 +462,27 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showLinkError(String link) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: const Text('Could not open this link.'),
-          action: SnackBarAction(
-            label: 'Retry',
-            onPressed: () {
-              _openLink(link);
-            },
+    showDialog<void>(
+      context: context,
+      builder:
+          (dialogContext) => AlertDialog(
+            title: const Text('Link unavailable'),
+            content: const Text('Could not open this link.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Close'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  _openLink(link);
+                },
+                child: const Text('Retry'),
+              ),
+            ],
           ),
-        ),
-      );
+    );
   }
 }
 
@@ -711,7 +719,7 @@ class _ErrorBanner extends StatelessWidget {
   }
 }
 
-class _ContentListTile extends StatelessWidget {
+class _ContentListTile extends StatefulWidget {
   const _ContentListTile({
     required this.item,
     required this.onTap,
@@ -723,7 +731,37 @@ class _ContentListTile extends StatelessWidget {
   final VoidCallback? onOpenLatest;
 
   @override
+  State<_ContentListTile> createState() => _ContentListTileState();
+}
+
+class _ContentListTileState extends State<_ContentListTile> {
+  late final FocusNode _openFocusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _openFocusNode = FocusNode(
+      debugLabel: 'Open latest link',
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent &&
+            event.logicalKey == LogicalKeyboardKey.enter) {
+          widget.onOpenLatest?.call();
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _openFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final item = widget.item;
     final localActivity = item.latestActivity.toLocal();
     final localizations = MaterialLocalizations.of(context);
     final latest = localizations.formatMediumDate(localActivity);
@@ -736,7 +774,7 @@ class _ContentListTile extends StatelessWidget {
       key: ValueKey('content-card-${item.content.id}'),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: onTap,
+        onTap: widget.onTap,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
           child: Row(
@@ -775,8 +813,12 @@ class _ContentListTile extends StatelessWidget {
               ),
               IconButton(
                 key: ValueKey('open-latest-${item.content.id}'),
-                onPressed: onOpenLatest,
-                icon: const Icon(Icons.open_in_new),
+                focusNode: _openFocusNode,
+                onPressed: widget.onOpenLatest,
+                icon: const Icon(
+                  Icons.open_in_new,
+                  semanticLabel: 'Open latest link',
+                ),
                 tooltip: 'Open latest link',
               ),
             ],

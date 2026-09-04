@@ -396,19 +396,27 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
   }
 
   void _showLinkError(String link) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: const Text('Could not open this link.'),
-          action: SnackBarAction(
-            label: 'Retry',
-            onPressed: () {
-              _openLink(link);
-            },
+    showDialog<void>(
+      context: context,
+      builder:
+          (dialogContext) => AlertDialog(
+            title: const Text('Link unavailable'),
+            content: const Text('Could not open this link.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Close'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  _openLink(link);
+                },
+                child: const Text('Retry'),
+              ),
+            ],
           ),
-        ),
-      );
+    );
   }
 }
 

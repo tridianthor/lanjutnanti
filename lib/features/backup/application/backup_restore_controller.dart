@@ -168,6 +168,10 @@ class BackupRestoreController extends ChangeNotifier {
       ),
     );
     try {
+      // Give Flutter a frame to paint the busy state before the synchronous
+      // SQLite replacement begins. This keeps repeated submissions blocked
+      // and makes progress visible for large local backups.
+      await Future<void>.delayed(Duration.zero);
       _restoreRepository.replace(preview);
       final message =
           'Restored ${preview.tagCount} ${_pluralize('tag', preview.tagCount)}, '

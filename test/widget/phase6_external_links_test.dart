@@ -60,21 +60,17 @@ void main() {
       final launcher = _SequenceLinkLauncher([true]);
 
       await tester.pumpWidget(
-        _app(
-          HomeScreen(controller: controller, linkLauncher: launcher),
-        ),
+        _app(HomeScreen(controller: controller, linkLauncher: launcher)),
       );
       await tester.pumpAndSettle();
       final semantics = tester.ensureSemantics();
-      addTearDown(semantics.dispose);
 
-      final openButton = find.byKey(
-        const ValueKey('open-latest-content-content-1'),
-      );
+      final openButton = find.byKey(const ValueKey('open-latest-content-1'));
       expect(find.bySemanticsLabel('Open latest link'), findsOneWidget);
-      final openButtonSemantics = find
-          .descendant(of: openButton, matching: find.byType(Semantics))
-          .first;
+      final openButtonSemantics =
+          find
+              .descendant(of: openButton, matching: find.byType(Semantics))
+              .last;
       final openButtonFocus = Focus.of(tester.element(openButtonSemantics));
 
       for (var i = 0; i < 12; i++) {
@@ -88,6 +84,7 @@ void main() {
       await tester.pump();
 
       expect(launcher.opened, [link]);
+      semantics.dispose();
     },
   );
 
@@ -122,41 +119,40 @@ void main() {
     expect(find.bySemanticsLabel('Open link'), findsNWidgets(2));
   });
 
-  testWidgets(
-    'failed launch keeps saved data and offers a retry action',
-    (tester) async {
-      final content = contents.create(name: 'Doraemon');
-      const link = 'https://example.com/unavailable';
-      final detail = details.create(contentId: content.id, link: link);
-      final launcher = _SequenceLinkLauncher([false, true]);
+  testWidgets('failed launch keeps saved data and offers a retry action', (
+    tester,
+  ) async {
+    final content = contents.create(name: 'Doraemon');
+    const link = 'https://example.com/unavailable';
+    final detail = details.create(contentId: content.id, link: link);
+    final launcher = _SequenceLinkLauncher([false, true]);
 
-      await tester.pumpWidget(
-        _app(
-          ContentDetailScreen(
-            contentId: content.id,
-            controller: controller,
-            linkLauncher: launcher,
-          ),
+    await tester.pumpWidget(
+      _app(
+        ContentDetailScreen(
+          contentId: content.id,
+          controller: controller,
+          linkLauncher: launcher,
         ),
-      );
-      await tester.pumpAndSettle();
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Open link'));
-      await tester.pump();
+    await tester.tap(find.text('Open link'));
+    await tester.pump();
 
-      expect(find.text('Could not open this link.'), findsOneWidget);
-      expect(find.text('Retry'), findsOneWidget);
-      expect(contents.findById(content.id), isNotNull);
-      expect(details.findById(detail.id), isNotNull);
+    expect(find.text('Could not open this link.'), findsOneWidget);
+    expect(find.text('Retry'), findsOneWidget);
+    expect(contents.findById(content.id), isNotNull);
+    expect(details.findById(detail.id), isNotNull);
 
-      await tester.tap(find.text('Retry'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Retry'));
+    await tester.pumpAndSettle();
 
-      expect(launcher.opened, [link, link]);
-      expect(contents.findById(content.id), isNotNull);
-      expect(details.findById(detail.id), isNotNull);
-    },
-  );
+    expect(launcher.opened, [link, link]);
+    expect(contents.findById(content.id), isNotNull);
+    expect(details.findById(detail.id), isNotNull);
+  });
 
   testWidgets('failed latest launch offers the same retry action on home', (
     tester,
@@ -171,9 +167,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(
-      find.byKey(const ValueKey('open-latest-content-content-1')),
-    );
+    await tester.tap(find.byKey(const ValueKey('open-latest-content-1')));
     await tester.pump();
 
     expect(find.text('Could not open this link.'), findsOneWidget);
