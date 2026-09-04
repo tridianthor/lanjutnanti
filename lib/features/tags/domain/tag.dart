@@ -14,10 +14,7 @@ class Tag {
     required Clock clock,
     required IdGenerator idGenerator,
   }) {
-    final normalizedName = name.trim();
-    if (normalizedName.isEmpty) {
-      throw ArgumentError.value(name, 'name', 'must not be empty');
-    }
+    final normalizedName = normalizeName(name);
     final now = clock.now().toUtc();
     return Tag(
       id: idGenerator.next(),
@@ -25,6 +22,14 @@ class Tag {
       createdAt: now,
       updatedAt: now,
     );
+  }
+
+  static String normalizeName(String name) {
+    final normalizedName = name.trim();
+    if (normalizedName.isEmpty) {
+      throw ArgumentError.value(name, 'name', 'must not be empty');
+    }
+    return normalizedName;
   }
 
   final String id;

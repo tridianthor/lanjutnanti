@@ -17,10 +17,7 @@ class Content {
     required IdGenerator idGenerator,
     String? tagId,
   }) {
-    final normalizedName = name.trim();
-    if (normalizedName.isEmpty) {
-      throw ArgumentError.value(name, 'name', 'must not be empty');
-    }
+    final normalizedName = normalizeName(name);
 
     final now = clock.now().toUtc();
     return Content(
@@ -30,6 +27,14 @@ class Content {
       createdAt: now,
       updatedAt: now,
     );
+  }
+
+  static String normalizeName(String name) {
+    final normalizedName = name.trim();
+    if (normalizedName.isEmpty) {
+      throw ArgumentError.value(name, 'name', 'must not be empty');
+    }
+    return normalizedName;
   }
 
   final String id;
