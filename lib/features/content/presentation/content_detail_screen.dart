@@ -389,16 +389,26 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
   Future<void> _openLink(String link) async {
     try {
       final opened = await widget.linkLauncher.open(link);
-      if (mounted && !opened) _showMessage('Could not open this link.');
+      if (mounted && !opened) _showLinkError(link);
     } catch (_) {
-      if (mounted) _showMessage('Could not open this link.');
+      if (mounted) _showLinkError(link);
     }
   }
 
-  void _showMessage(String message) {
+  void _showLinkError(String link) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+      ..showSnackBar(
+        SnackBar(
+          content: const Text('Could not open this link.'),
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: () {
+              _openLink(link);
+            },
+          ),
+        ),
+      );
   }
 }
 
