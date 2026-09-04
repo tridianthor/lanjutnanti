@@ -4,6 +4,12 @@ import 'package:lanjut_nanti/core/ids/id_generator.dart';
 import 'package:lanjut_nanti/core/time/clock.dart';
 import 'package:lanjut_nanti/features/content/domain/content.dart';
 
+abstract interface class ContentSearchRepository {
+  /// Returns matching content in deterministic recent-activity order. An
+  /// empty query matches every content item.
+  List<Content> search({String query = '', String? tagId});
+}
+
 abstract interface class ContentRepository {
   List<Content> getAll();
 
@@ -26,7 +32,8 @@ abstract interface class ContentRepository {
   void delete(String id);
 }
 
-class SqliteContentRepository implements ContentRepository {
+class SqliteContentRepository
+    implements ContentRepository, ContentSearchRepository {
   SqliteContentRepository(
     this.database, {
     Clock? clock,
@@ -37,6 +44,7 @@ class SqliteContentRepository implements ContentRepository {
   final AppDatabase database;
   final Clock _clock;
   final IdGenerator _idGenerator;
+  final Map<String, DateTime> _timestampCache = {};
 
   @override
   List<Content> getAll() {
@@ -50,6 +58,32 @@ class SqliteContentRepository implements ContentRepository {
 
   @override
   List<Content> listRecent() => getAll();
+
+  @override
+  List<Content> search({String query = '', String? tagId}) {
+    final normalizedQuery = query.trim().toLowerCase();
+    final pattern = _likePattern(normalizedQuery);
+    final rows = database.raw.select(
+      '''
+      SELECT c.id, c.name, c.tag_id, c.user_id, c.created_at, c.updated_at
+      FROM contents AS c
+      LEFT JOIN tags AS t ON t.id = c.tag_id
+      WHERE (? = '' OR lower(c.name) LIKE ? ESCAPE '\\'
+        OR lower(t.name) LIKE ? ESCAPE '\\'
+        OR EXISTS (
+          SELECT 1
+          FROM content_details AS d
+          WHERE d.content_id = c.id
+            AND d.note IS NOT NULL
+            AND lower(d.note) LIKE ? ESCAPE '\\'
+        ))
+        AND (? IS NULL OR c.tag_id = ?)
+      ORDER BY c.updated_at DESC, c.created_at DESC, c.id DESC
+    ''',
+      [normalizedQuery, pattern, pattern, pattern, tagId, tagId],
+    );
+    return rows.map(_fromRow).toList();
+  }
 
   @override
   Content? findById(String id) {
@@ -202,10 +236,27 @@ class SqliteContentRepository implements ContentRepository {
       name: row['name']! as String,
       tagId: row['tag_id'] as String?,
       userId: row['user_id'] as String?,
-      createdAt: decodeUtcTimestamp(row['created_at']),
-      updatedAt: decodeUtcTimestamp(row['updated_at']),
+      createdAt: _decodeTimestamp(row['created_at']),
+      updatedAt: _decodeTimestamp(row['updated_at']),
     );
   }
+
+  DateTime _decodeTimestamp(Object? value) {
+    if (value is! String) return decodeUtcTimestamp(value);
+    final cached = _timestampCache[value];
+    if (cached != null) return cached;
+    final decoded = decodeUtcTimestamp(value);
+    _timestampCache[value] = decoded;
+    return decoded;
+  }
+}
+
+String _likePattern(String query) {
+  final escaped = query
+      .replaceAll(r'\', r'\\')
+      .replaceAll('%', r'\%')
+      .replaceAll('_', r'\_');
+  return '%$escaped%';
 }
 
 typedef SQLiteContentRepository = SqliteContentRepository;

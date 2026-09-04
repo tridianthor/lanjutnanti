@@ -11,6 +11,7 @@ import 'package:lanjut_nanti/features/content/presentation/content_detail_screen
 import 'package:lanjut_nanti/features/content/presentation/content_form_screen.dart';
 import 'package:lanjut_nanti/features/tags/application/tag_application_service.dart';
 import 'package:lanjut_nanti/features/tags/data/tag_repository.dart';
+import 'package:lanjut_nanti/features/tags/domain/tag.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -31,6 +32,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late final ContentListController _controller;
   late final TagApplicationService? _tagService;
+  late final TextEditingController _searchController;
+  List<Tag> _tags = const [];
   AppDatabase? _ownedDatabase;
 
   @override
@@ -70,13 +73,18 @@ class _HomeScreenState extends State<HomeScreen> {
       );
       _tagService = TagApplicationService(tagRepository);
     }
+    _searchController = TextEditingController(text: _controller.state.query);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _loadContent();
+      if (mounted) {
+        _loadContent();
+        _loadTags();
+      }
     });
   }
 
   @override
   void dispose() {
+    _searchController.dispose();
     if (widget.controller == null) {
       _controller.dispose();
       _ownedDatabase?.dispose();
@@ -86,6 +94,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadContent() async {
     await _controller.load();
+  }
+
+  Future<void> _loadTags() async {
+    final tagService = _tagService;
+    if (tagService == null) return;
+    try {
+      final tags = tagService.list();
+      if (mounted) setState(() => _tags = List.unmodifiable(tags));
+    } catch (_) {
+      // Tag filtering is optional; the content list remains usable if tags
+      // cannot be read.
+    }
   }
 
   @override
@@ -103,7 +123,23 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: AnimatedBuilder(
         animation: _controller,
-        builder: (context, child) => _buildState(context, _controller.state),
+        builder:
+            (context, child) => Column(
+              children: [
+                _SearchField(
+                  controller: _searchController,
+                  onChanged: _search,
+                  onClear: _clearSearch,
+                ),
+                if (_tags.isNotEmpty)
+                  _TagFilter(
+                    tags: _tags,
+                    selectedTagId: _controller.state.tagId,
+                    onChanged: _setTagFilter,
+                  ),
+                Expanded(child: _buildState(context, _controller.state)),
+              ],
+            ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openCreateContent,
@@ -133,6 +169,10 @@ class _HomeScreenState extends State<HomeScreen> {
   ) {
     if (state.isLoading && state.items.isEmpty) {
       return const Center(child: CircularProgressIndicator());
+    }
+
+    if (state.items.isEmpty && state.hasSearch && !state.hasError) {
+      return _NoSearchResultsState(onClear: _clearFilters);
     }
 
     if (state.items.isEmpty) {
@@ -176,6 +216,23 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _search(String query) => _controller.search(query);
+
+  Future<void> _clearSearch() async {
+    _searchController.clear();
+    if (_controller.state.query.isEmpty) return;
+    await _controller.search('');
+  }
+
+  Future<void> _clearFilters() async {
+    await _clearSearch();
+    if (mounted && _controller.state.tagId != null) {
+      await _controller.setTagFilter(null);
+    }
+  }
+
+  Future<void> _setTagFilter(String? tagId) => _controller.setTagFilter(tagId);
+
   Future<void> _openCreateContent() async {
     await Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
@@ -187,6 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
       ),
     );
+    if (mounted) await _loadTags();
   }
 
   Future<void> _openDetails(String contentId) async {
@@ -276,6 +334,163 @@ class _EmptyContentState extends StatelessWidget {
   }
 }
 
+class _NoSearchResultsState extends StatelessWidget {
+  const _NoSearchResultsState({required this.onClear});
+
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.search_off,
+              size: 56,
+              color: Theme.of(context).colorScheme.primary,
+              semanticLabel: 'No search results',
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No content matches your search.',
+              style: Theme.of(context).textTheme.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            OutlinedButton(
+              key: const ValueKey('clear-search-empty-state'),
+              onPressed: onClear,
+              child: const Text('Clear search'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchField extends StatelessWidget {
+  const _SearchField({
+    required this.controller,
+    required this.onChanged,
+    required this.onClear,
+  });
+
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final horizontalPadding = constraints.maxWidth < 600 ? 16.0 : 24.0;
+        return Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 920),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                12,
+                horizontalPadding,
+                4,
+              ),
+              child: TextField(
+                key: const ValueKey('content-search-field'),
+                controller: controller,
+                onChanged: onChanged,
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(
+                  labelText: 'Search content',
+                  hintText: 'Name, tag, or note',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon:
+                      controller.text.isEmpty
+                          ? null
+                          : IconButton(
+                            key: const ValueKey('clear-content-search'),
+                            onPressed: onClear,
+                            tooltip: 'Clear search',
+                            icon: const Icon(Icons.clear),
+                          ),
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _TagFilter extends StatelessWidget {
+  const _TagFilter({
+    required this.tags,
+    required this.selectedTagId,
+    required this.onChanged,
+  });
+
+  final List<Tag> tags;
+  final String? selectedTagId;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final horizontalPadding = constraints.maxWidth < 600 ? 16.0 : 24.0;
+        return Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 920),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                4,
+                horizontalPadding,
+                4,
+              ),
+              child: InputDecorator(
+                decoration: const InputDecoration(
+                  labelText: 'Filter by tag',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.label_outline),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String?>(
+                    key: const ValueKey('content-tag-filter'),
+                    value: selectedTagId,
+                    isExpanded: true,
+                    hint: const Text('All tags'),
+                    onChanged: onChanged,
+                    items: [
+                      const DropdownMenuItem<String?>(
+                        key: ValueKey('tag-filter-option-all'),
+                        value: null,
+                        child: Text('All tags'),
+                      ),
+                      ...tags.map(
+                        (tag) => DropdownMenuItem<String?>(
+                          key: ValueKey('tag-filter-option-${tag.id}'),
+                          value: tag.id,
+                          child: Text(tag.name),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 class _ErrorBanner extends StatelessWidget {
   const _ErrorBanner({required this.message, required this.onRetry});
 
@@ -318,6 +533,7 @@ class _ContentListTile extends StatelessWidget {
     );
 
     return Card(
+      key: ValueKey('content-card-${item.content.id}'),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,

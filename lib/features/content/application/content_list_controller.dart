@@ -8,29 +8,40 @@ import 'package:lanjut_nanti/features/tags/data/tag_repository.dart';
 enum ContentListStatus { initial, loading, data, empty, error }
 
 class ContentListState {
+  static const _notProvided = Object();
+
   const ContentListState({
     this.status = ContentListStatus.initial,
     this.items = const [],
+    this.query = '',
+    this.tagId,
     this.error,
   });
 
   final ContentListStatus status;
   final List<ContentListItem> items;
+  final String query;
+  final String? tagId;
   final ApplicationFailure? error;
 
   bool get isLoading => status == ContentListStatus.loading;
   bool get hasData => status == ContentListStatus.data;
   bool get isEmpty => status == ContentListStatus.empty;
   bool get hasError => status == ContentListStatus.error;
+  bool get hasSearch => query.trim().isNotEmpty || tagId != null;
 
   ContentListState copyWith({
     ContentListStatus? status,
     List<ContentListItem>? items,
+    String? query,
+    Object? tagId = _notProvided,
     ApplicationFailure? error,
   }) {
     return ContentListState(
       status: status ?? this.status,
       items: items ?? this.items,
+      query: query ?? this.query,
+      tagId: identical(tagId, _notProvided) ? this.tagId : tagId as String?,
       error: error,
     );
   }
@@ -54,6 +65,8 @@ class ContentListController extends ChangeNotifier {
 
   final ContentApplicationService _service;
   ContentListState _state = const ContentListState();
+  String _query = '';
+  String? _tagId;
 
   ContentListState get state => _state;
 
@@ -62,22 +75,47 @@ class ContentListController extends ChangeNotifier {
   /// the home list is refreshed only after a committed change.
   ContentApplicationService get service => _service;
 
-  Future<void> load() async {
+  Future<void> load({String? query, String? tagId}) async {
+    if (query != null) _query = query;
+    if (tagId != null || query != null) _tagId = tagId;
     final previousItems = _state.items;
     _publish(
-      ContentListState(status: ContentListStatus.loading, items: previousItems),
+      ContentListState(
+        status: ContentListStatus.loading,
+        items: previousItems,
+        query: _query,
+        tagId: _tagId,
+      ),
     );
     try {
-      _publishLoaded(_service.listRecent());
+      _publishLoaded(_loadItems());
     } catch (error, stackTrace) {
       _publish(
         ContentListState(
           status: ContentListStatus.error,
           items: previousItems,
+          query: _query,
+          tagId: _tagId,
           error: _asFailure(error, stackTrace, operation: 'load content'),
         ),
       );
     }
+  }
+
+  /// Refreshes the list immediately as the user types; no submit action is
+  /// needed for local search.
+  Future<void> search(String query) async {
+    _query = query;
+    await load();
+  }
+
+  Future<void> setQuery(String query) => search(query);
+
+  Future<void> setSearchQuery(String query) => search(query);
+
+  Future<void> setTagFilter(String? tagId) async {
+    _tagId = tagId;
+    await load();
   }
 
   Future<CreateContentResult?> createContent({
@@ -140,17 +178,24 @@ class ContentListController extends ChangeNotifier {
   Future<T?> _runMutation<T>(T Function() operation) async {
     final previousItems = _state.items;
     _publish(
-      ContentListState(status: ContentListStatus.loading, items: previousItems),
+      ContentListState(
+        status: ContentListStatus.loading,
+        items: previousItems,
+        query: _query,
+        tagId: _tagId,
+      ),
     );
     try {
       final result = operation();
-      _publishLoaded(_service.listRecent());
+      _publishLoaded(_loadItems());
       return result;
     } catch (error, stackTrace) {
       _publish(
         ContentListState(
           status: ContentListStatus.error,
           items: previousItems,
+          query: _query,
+          tagId: _tagId,
           error: _asFailure(error, stackTrace, operation: 'save changes'),
         ),
       );
@@ -167,8 +212,16 @@ class ContentListController extends ChangeNotifier {
                 ? ContentListStatus.empty
                 : ContentListStatus.data,
         items: stableItems,
+        query: _query,
+        tagId: _tagId,
       ),
     );
+  }
+
+  List<ContentListItem> _loadItems() {
+    return _query.trim().isEmpty && _tagId == null
+        ? _service.listRecent()
+        : _service.search(_query, tagId: _tagId);
   }
 
   void _publish(ContentListState next) {

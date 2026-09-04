@@ -108,22 +108,25 @@ class ContentApplicationService {
   final ContentDetailRepository detailRepository;
   final TagRepository tagRepository;
 
-  List<ContentListItem> listRecent() {
+  List<ContentListItem> listRecent({String query = '', String? tagId}) {
     return _guard('load content', () {
       // Read all supporting records before exposing any row. If one read fails,
       // callers receive an error rather than a list assembled from partial data.
-      final contents = contentRepository.listRecent();
-      if (contents.isEmpty) return const <ContentListItem>[];
       final tags = <String, Tag>{
         for (final tag in tagRepository.list()) tag.id: tag,
       };
+      final contents = _selectContents(query: query, tagId: tagId, tags: tags);
+      if (contents.isEmpty) return const <ContentListItem>[];
+      final latestDetails = _latestDetails(
+        contents.map((content) => content.id),
+      );
       final items = <ContentListItem>[];
       for (final content in contents) {
         items.add(
           ContentListItem(
             content: content,
             tag: content.tagId == null ? null : tags[content.tagId],
-            latestDetail: detailRepository.latestForContent(content.id),
+            latestDetail: latestDetails[content.id],
           ),
         );
       }
@@ -131,7 +134,12 @@ class ContentApplicationService {
     });
   }
 
-  List<ContentListItem> loadRecent() => listRecent();
+  List<ContentListItem> loadRecent({String query = '', String? tagId}) =>
+      listRecent(query: query, tagId: tagId);
+
+  List<ContentListItem> search(String query, {String? tagId}) {
+    return listRecent(query: query, tagId: tagId);
+  }
 
   ContentDetailView loadDetails(String contentId) {
     return _guard('load content details', () {
@@ -252,6 +260,60 @@ class ContentApplicationService {
       content: _requireContent(detail.contentId),
       history: detailRepository.listForContent(detail.contentId),
     );
+  }
+
+  List<Content> _selectContents({
+    required String query,
+    required String? tagId,
+    required Map<String, Tag> tags,
+  }) {
+    if (query.trim().isEmpty && tagId == null) {
+      return contentRepository.listRecent();
+    }
+
+    final searchable = contentRepository;
+    if (searchable is ContentSearchRepository) {
+      return (searchable as ContentSearchRepository).search(
+        query: query,
+        tagId: tagId,
+      );
+    }
+
+    // Application fakes and alternate stores can remain small by implementing
+    // only ContentRepository. Their fallback keeps the same semantics, while
+    // SQLite uses the set-based SQL search above.
+    final normalizedQuery = query.trim().toLowerCase();
+    return contentRepository.listRecent().where((content) {
+      if (tagId != null && content.tagId != tagId) return false;
+      if (normalizedQuery.isEmpty) return true;
+      final tagName = content.tagId == null ? null : tags[content.tagId]?.name;
+      if (content.name.toLowerCase().contains(normalizedQuery) ||
+          tagName?.toLowerCase().contains(normalizedQuery) == true) {
+        return true;
+      }
+      return detailRepository
+          .listForContent(content.id)
+          .any(
+            (detail) =>
+                detail.note?.toLowerCase().contains(normalizedQuery) == true,
+          );
+    }).toList();
+  }
+
+  Map<String, ContentDetail> _latestDetails(Iterable<String> contentIds) {
+    final bulkReader = detailRepository;
+    if (bulkReader is LatestContentDetailReader) {
+      return (bulkReader as LatestContentDetailReader).latestForContents(
+        contentIds,
+      );
+    }
+
+    final latest = <String, ContentDetail>{};
+    for (final contentId in contentIds) {
+      final detail = detailRepository.latestForContent(contentId);
+      if (detail != null) latest[contentId] = detail;
+    }
+    return latest;
   }
 }
 

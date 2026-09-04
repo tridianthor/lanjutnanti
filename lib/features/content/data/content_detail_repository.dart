@@ -4,6 +4,10 @@ import 'package:lanjut_nanti/core/ids/id_generator.dart';
 import 'package:lanjut_nanti/core/time/clock.dart';
 import 'package:lanjut_nanti/features/content/domain/content_detail.dart';
 
+abstract interface class LatestContentDetailReader {
+  Map<String, ContentDetail> latestForContents(Iterable<String> contentIds);
+}
+
 abstract interface class ContentDetailRepository {
   List<ContentDetail> getForContent(String contentId);
 
@@ -30,7 +34,8 @@ abstract interface class ContentDetailRepository {
   void delete(String id);
 }
 
-class SqliteContentDetailRepository implements ContentDetailRepository {
+class SqliteContentDetailRepository
+    implements ContentDetailRepository, LatestContentDetailReader {
   SqliteContentDetailRepository(
     this.database, {
     Clock? clock,
@@ -41,6 +46,7 @@ class SqliteContentDetailRepository implements ContentDetailRepository {
   final AppDatabase database;
   final Clock _clock;
   final IdGenerator _idGenerator;
+  final Map<String, DateTime> _timestampCache = {};
 
   @override
   List<ContentDetail> getForContent(String contentId) {
@@ -59,6 +65,53 @@ class SqliteContentDetailRepository implements ContentDetailRepository {
   @override
   List<ContentDetail> listForContent(String contentId) =>
       getForContent(contentId);
+
+  @override
+  Map<String, ContentDetail> latestForContents(Iterable<String> contentIds) {
+    final ids = contentIds.toSet().toList();
+    if (ids.isEmpty) return const <String, ContentDetail>{};
+
+    // A set-based window query is faster than one query per content and only
+    // decodes one row per content. Smaller result sets use the content index
+    // and bind fewer parameters, avoiding SQLite's variable-count limit.
+    final useContentFilter = ids.length <= 500;
+    final placeholders = List.filled(ids.length, '?').join(', ');
+    final rows = database.raw.select(
+      useContentFilter
+          ? '''
+      SELECT id, content_id, link, note, created_at, updated_at
+      FROM (
+        SELECT id, content_id, link, note, created_at, updated_at,
+          ROW_NUMBER() OVER (
+            PARTITION BY content_id
+            ORDER BY updated_at DESC, created_at DESC, id DESC
+          ) AS detail_rank
+        FROM content_details
+        WHERE content_id IN ($placeholders)
+      )
+      WHERE detail_rank = 1
+    '''
+          : '''
+      SELECT id, content_id, link, note, created_at, updated_at
+      FROM (
+        SELECT id, content_id, link, note, created_at, updated_at,
+          ROW_NUMBER() OVER (
+            PARTITION BY content_id
+            ORDER BY updated_at DESC, created_at DESC, id DESC
+          ) AS detail_rank
+        FROM content_details
+      )
+      WHERE detail_rank = 1
+    ''',
+      useContentFilter ? ids : const <Object?>[],
+    );
+    final latest = <String, ContentDetail>{};
+    for (final row in rows) {
+      final contentId = row['content_id']! as String;
+      latest.putIfAbsent(contentId, () => _fromRow(row));
+    }
+    return latest;
+  }
 
   @override
   ContentDetail? findById(String id) {
@@ -231,9 +284,18 @@ class SqliteContentDetailRepository implements ContentDetailRepository {
       contentId: row['content_id']! as String,
       link: row['link']! as String,
       note: row['note'] as String?,
-      createdAt: decodeUtcTimestamp(row['created_at']),
-      updatedAt: decodeUtcTimestamp(row['updated_at']),
+      createdAt: _decodeTimestamp(row['created_at']),
+      updatedAt: _decodeTimestamp(row['updated_at']),
     );
+  }
+
+  DateTime _decodeTimestamp(Object? value) {
+    if (value is! String) return decodeUtcTimestamp(value);
+    final cached = _timestampCache[value];
+    if (cached != null) return cached;
+    final decoded = decodeUtcTimestamp(value);
+    _timestampCache[value] = decoded;
+    return decoded;
   }
 }
 

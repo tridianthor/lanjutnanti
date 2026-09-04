@@ -19,7 +19,7 @@ void main() {
     contents = SqliteContentRepository(
       database,
       clock: clock,
-      idGenerator: SequenceIdGenerator(['content-1']),
+      idGenerator: SequenceIdGenerator(['content-1', 'content-2']),
     );
     details = SqliteContentDetailRepository(
       database,
@@ -75,6 +75,29 @@ void main() {
       'detail-a',
     ]);
     expect(details.latestForContent(content.id)!.id, 'detail-b');
+  });
+
+  test('reads the latest detail for multiple contents as one projection', () {
+    final firstContent = contents.create(name: 'First');
+    final secondContent = contents.create(name: 'Second');
+    final firstDetail = details.create(
+      contentId: firstContent.id,
+      link: 'https://example.com/first',
+    );
+    final secondDetail = details.create(
+      contentId: secondContent.id,
+      link: 'https://example.com/second',
+    );
+
+    final latest = details.latestForContents([
+      secondContent.id,
+      firstContent.id,
+      firstContent.id,
+    ]);
+
+    expect(latest.keys, containsAll([firstContent.id, secondContent.id]));
+    expect(latest[firstContent.id]!.id, firstDetail.id);
+    expect(latest[secondContent.id]!.id, secondDetail.id);
   });
 
   test(
