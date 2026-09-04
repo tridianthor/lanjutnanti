@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lanjut_nanti/app/app_dependencies.dart';
+import 'package:lanjut_nanti/core/links/link_launcher.dart';
 import 'package:lanjut_nanti/features/content/presentation/home_screen.dart';
 
 class LanjutNantiApp extends StatelessWidget {
@@ -15,7 +16,12 @@ class LanjutNantiApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: HomeScreen(
+        controller: dependencies?.contentController,
+        tagService: dependencies?.tagService,
+        linkLauncher:
+            dependencies?.linkLauncher ?? const UrlLauncherLinkLauncher(),
+      ),
     );
   }
 }

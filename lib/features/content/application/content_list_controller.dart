@@ -57,6 +57,11 @@ class ContentListController extends ChangeNotifier {
 
   ContentListState get state => _state;
 
+  /// Exposes read-only application operations to screens that are not the
+  /// home list. Mutations should continue to go through this controller so
+  /// the home list is refreshed only after a committed change.
+  ContentApplicationService get service => _service;
+
   Future<void> load() async {
     final previousItems = _state.items;
     _publish(

@@ -27,7 +27,7 @@ class ContentListItem {
     return note == null || note.trim().isEmpty ? detail.link : note;
   }
 
-  DateTime get latestActivity => content.updatedAt;
+  DateTime get latestActivity => latestDetail?.updatedAt ?? content.updatedAt;
 }
 
 class CreateContentResult {
