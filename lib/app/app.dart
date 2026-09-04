@@ -19,6 +19,8 @@ class LanjutNantiApp extends StatelessWidget {
       home: HomeScreen(
         controller: dependencies?.contentController,
         tagService: dependencies?.tagService,
+        backupExportController: dependencies?.backupExportController,
+        backupRestoreController: dependencies?.backupRestoreController,
         linkLauncher:
             dependencies?.linkLauncher ?? const UrlLauncherLinkLauncher(),
       ),

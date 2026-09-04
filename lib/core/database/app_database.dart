@@ -31,7 +31,19 @@ class AppDatabase {
   static const schemaVersion = 1;
 
   T transaction<T>(T Function() action) {
-    raw.execute('BEGIN IMMEDIATE');
+    return _runTransaction('BEGIN IMMEDIATE', action);
+  }
+
+  /// Runs a set of reads against one SQLite snapshot.
+  ///
+  /// A deferred transaction gives every query in a multi-table read the same
+  /// view of the database without taking a write lock.
+  T readTransaction<T>(T Function() action) {
+    return _runTransaction('BEGIN', action);
+  }
+
+  T _runTransaction<T>(String beginStatement, T Function() action) {
+    raw.execute(beginStatement);
     try {
       final result = action();
       raw.execute('COMMIT');

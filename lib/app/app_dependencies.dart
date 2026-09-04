@@ -5,6 +5,10 @@ import 'package:lanjut_nanti/core/database/app_database.dart';
 import 'package:lanjut_nanti/core/ids/id_generator.dart';
 import 'package:lanjut_nanti/core/links/link_launcher.dart';
 import 'package:lanjut_nanti/core/time/clock.dart';
+import 'package:lanjut_nanti/features/backup/application/backup_export_controller.dart';
+import 'package:lanjut_nanti/features/backup/application/backup_restore_controller.dart';
+import 'package:lanjut_nanti/features/backup/data/backup_restore_repository.dart';
+import 'package:lanjut_nanti/features/backup/data/backup_snapshot_repository.dart';
 import 'package:lanjut_nanti/features/content/application/content_application_service.dart';
 import 'package:lanjut_nanti/features/content/application/content_list_controller.dart';
 import 'package:lanjut_nanti/features/content/data/content_detail_repository.dart';
@@ -19,6 +23,8 @@ class AppDependencies {
     this.database,
     this.contentController,
     this.tagService,
+    this.backupExportController,
+    this.backupRestoreController,
     this.linkLauncher = const UrlLauncherLinkLauncher(),
   });
 
@@ -56,12 +62,23 @@ class AppDependencies {
       detailRepository: detailRepository,
       tagRepository: tagRepository,
     );
+    final backupExportController = BackupExportController(
+      snapshotRepository: SqliteBackupSnapshotRepository(database),
+      fileGateway: const FileSaverBackupFileGateway(),
+      clock: clock,
+    );
+    final backupRestoreController = BackupRestoreController(
+      restoreRepository: SqliteBackupRestoreRepository(database),
+      fileGateway: const FilePickerBackupRestoreFileGateway(),
+    );
     return AppDependencies(
-      clock: const SystemClock(),
+      clock: clock,
       idGenerator: idGenerator,
       database: database,
       contentController: ContentListController(service: service),
       tagService: TagApplicationService(tagRepository),
+      backupExportController: backupExportController,
+      backupRestoreController: backupRestoreController,
     );
   }
 
@@ -70,5 +87,7 @@ class AppDependencies {
   final AppDatabase? database;
   final ContentListController? contentController;
   final TagApplicationService? tagService;
+  final BackupExportController? backupExportController;
+  final BackupRestoreController? backupRestoreController;
   final LinkLauncher linkLauncher;
 }
