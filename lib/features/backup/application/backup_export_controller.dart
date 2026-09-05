@@ -14,11 +14,13 @@ class BackupExportState {
     this.status = BackupExportStatus.idle,
     this.message,
     this.destination,
+    this.failure,
   });
 
   final BackupExportStatus status;
   final String? message;
   final String? destination;
+  final ApplicationFailure? failure;
 
   bool get isBusy => status == BackupExportStatus.busy;
   bool get isSuccess => status == BackupExportStatus.success;
@@ -31,11 +33,13 @@ class BackupExportResult {
     required this.status,
     this.message,
     this.destination,
+    this.failure,
   });
 
   final BackupExportStatus status;
   final String? message;
   final String? destination;
+  final ApplicationFailure? failure;
 }
 
 /// Coordinates snapshot, serialization, and destination selection for export.
@@ -110,11 +114,13 @@ class BackupExportController extends ChangeNotifier {
         BackupExportState(
           status: BackupExportStatus.error,
           message: failure.message,
+          failure: failure,
         ),
       );
       return BackupExportResult(
         status: BackupExportStatus.error,
         message: failure.message,
+        failure: failure,
       );
     }
   }
@@ -131,6 +137,9 @@ ApplicationFailure _asExportFailure(Object error, StackTrace stackTrace) {
   final failure = mapApplicationFailure(error, operation: 'export backup');
   return ApplicationFailure(
     kind: failure.kind,
+    operation: failure.operation,
+    code: failure.code,
+    field: failure.field,
     message: failure.message,
     cause: failure.cause,
     stackTrace: failure.stackTrace ?? stackTrace,

@@ -1,3 +1,8 @@
+import 'package:lanjut_nanti/l10n/backup_message_localization.dart';
+import 'package:lanjut_nanti/l10n/application_failure_localization.dart';
+import 'package:lanjut_nanti/l10n/app_localizations.dart';
+import 'package:lanjut_nanti/features/settings/application/locale_controller.dart';
+import 'package:lanjut_nanti/features/settings/presentation/language_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lanjut_nanti/core/database/app_database.dart';
@@ -20,12 +25,14 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({
     super.key,
     this.controller,
+    this.localeController,
     this.tagService,
     this.backupExportController,
     this.backupRestoreController,
     this.linkLauncher = const UrlLauncherLinkLauncher(),
   });
 
+  final LocaleController? localeController;
   final ContentListController? controller;
   final TagApplicationService? tagService;
   final BackupExportController? backupExportController;
@@ -121,6 +128,8 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Lanjut Nanti'),
         actions: [
+          if (widget.localeController != null)
+            LanguageAction(controller: widget.localeController!),
           if (widget.backupExportController != null)
             _buildBackupAction(widget.backupExportController!),
           if (widget.backupRestoreController != null)
@@ -128,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             onPressed: _openCreateContent,
             icon: const Icon(Icons.add),
-            tooltip: 'Add Content',
+            tooltip: AppLocalizations.of(context)!.addContent,
           ),
         ],
       ),
@@ -137,6 +146,10 @@ class _HomeScreenState extends State<HomeScreen> {
         builder:
             (context, child) => Column(
               children: [
+                if (widget.localeController != null)
+                  LanguagePreferenceNotice(
+                    controller: widget.localeController!,
+                  ),
                 _SearchField(
                   controller: _searchController,
                   onChanged: _search,
@@ -155,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openCreateContent,
         icon: const Icon(Icons.add),
-        label: const Text('Add Content'),
+        label: Text(AppLocalizations.of(context)!.addContent),
       ),
     );
   }
@@ -167,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
           (context, child) => IconButton(
             key: const ValueKey('export-backup-action'),
             onPressed: controller.state.isBusy ? null : _confirmExport,
-            tooltip: 'Export backup',
+            tooltip: AppLocalizations.of(context)!.exportBackup,
             icon:
                 controller.state.isBusy
                     ? const SizedBox(
@@ -188,21 +201,18 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('Export backup?'),
-            content: const Text(
-              'This backup may contain private links and notes. The destination '
-              'you choose controls who can access the file.',
-            ),
+            title: Text(AppLocalizations.of(context)!.exportBackupTitle),
+            content: Text(AppLocalizations.of(context)!.exportPrivacy),
             actions: [
               TextButton(
                 key: const ValueKey('cancel-export-backup'),
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
+                child: Text(AppLocalizations.of(context)!.cancel),
               ),
               FilledButton(
                 key: const ValueKey('confirm-export-backup'),
                 onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Export'),
+                child: Text(AppLocalizations.of(context)!.export),
               ),
             ],
           ),
@@ -211,16 +221,31 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final result = await controller.export();
     if (!mounted || result.status == BackupExportStatus.duplicate) return;
-    final message = result.message ?? 'Could not export backup.';
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: Text(message),
-          action:
-              result.status == BackupExportStatus.error
-                  ? SnackBarAction(label: 'Retry', onPressed: _confirmExport)
-                  : null,
+          content: Builder(
+            builder: (context) {
+              final l = AppLocalizations.of(context)!;
+              final message = switch (result.status) {
+                BackupExportStatus.success => l.exportSuccess,
+                BackupExportStatus.cancelled => l.exportCancelled,
+                _ =>
+                  result.failure == null
+                      ? l.exportFailed
+                      : localizeFailure(l, result.failure!),
+              };
+              return Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(message),
+                  if (result.status == BackupExportStatus.error)
+                    TextButton(onPressed: _confirmExport, child: Text(l.retry)),
+                ],
+              );
+            },
+          ),
         ),
       );
   }
@@ -232,7 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
           (context, child) => IconButton(
             key: const ValueKey('import-backup-action'),
             onPressed: controller.state.isBusy ? null : _selectRestore,
-            tooltip: 'Import backup',
+            tooltip: AppLocalizations.of(context)!.importBackup,
             icon:
                 controller.state.isBusy
                     ? const SizedBox(
@@ -256,13 +281,13 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
     if (result.status == BackupRestoreStatus.error) {
-      if (result.message != null) _showRestoreMessage(result.message!);
+      if (result.message != null) _showRestoreMessage(result);
       return;
     }
     if (result.status != BackupRestoreStatus.preview ||
         result.preview == null) {
       if (result.message != null) {
-        _showRestoreMessage(result.message!);
+        _showRestoreMessage(result);
       }
       return;
     }
@@ -272,26 +297,24 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('Replace local data?'),
+            title: Text(AppLocalizations.of(context)!.replaceLocalData),
             content: Text(
-              'This valid backup contains ${preview.tagCount} '
-              '${preview.tagCount == 1 ? 'tag' : 'tags'}, '
-              '${preview.contentCount} '
-              '${preview.contentCount == 1 ? 'content item' : 'content items'}, '
-              'and ${preview.detailCount} '
-              '${preview.detailCount == 1 ? 'detail' : 'details'}. '
-              'Confirming will replace all current local data.',
+              AppLocalizations.of(context)!.restorePreview(
+                preview.tagCount,
+                preview.contentCount,
+                preview.detailCount,
+              ),
             ),
             actions: [
               TextButton(
                 key: const ValueKey('cancel-restore-backup'),
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
+                child: Text(AppLocalizations.of(context)!.cancel),
               ),
               FilledButton(
                 key: const ValueKey('confirm-restore-backup'),
                 onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Replace'),
+                child: Text(AppLocalizations.of(context)!.replace),
               ),
             ],
           ),
@@ -304,39 +327,46 @@ class _HomeScreenState extends State<HomeScreen> {
       await _loadContent();
       await _loadTags();
     }
-    if (restored.message != null) _showRestoreMessage(restored.message!);
+    if (restored.message != null) _showRestoreMessage(restored);
   }
 
   Future<void> _showRestoreValidation(BackupRestoreResult result) async {
-    final details = result.issues
-        .take(5)
-        .map((issue) => issue.toString())
-        .join('\n');
     await showDialog<void>(
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('Backup validation failed'),
+            title: Text(AppLocalizations.of(context)!.backupValidationFailed),
             content: SingleChildScrollView(
               child: Text(
-                '${result.issues.length} validation error(s). Your saved data '
-                'was not changed.\n\n$details',
+                localizeBackupIssues(
+                  AppLocalizations.of(context)!,
+                  result.issues,
+                ),
               ),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Close'),
+                child: Text(AppLocalizations.of(context)!.close),
               ),
             ],
           ),
     );
   }
 
-  void _showRestoreMessage(String message) {
+  void _showRestoreMessage(BackupRestoreResult result) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+      ..showSnackBar(
+        SnackBar(
+          content: Builder(
+            builder:
+                (context) => Text(
+                  localizeRestoreResult(AppLocalizations.of(context)!, result),
+                ),
+          ),
+        ),
+      );
   }
 
   Widget _buildState(BuildContext context, ContentListState state) {
@@ -368,7 +398,10 @@ class _HomeScreenState extends State<HomeScreen> {
     if (state.items.isEmpty) {
       return _EmptyContentState(
         hasError: state.hasError,
-        errorMessage: state.error?.message,
+        errorMessage:
+            state.error == null
+                ? null
+                : localizeFailure(AppLocalizations.of(context)!, state.error!),
         onRetry: state.hasError ? _loadContent : null,
         onAdd: _openCreateContent,
       );
@@ -385,7 +418,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         children: [
           if (state.hasError)
-            _ErrorBanner(message: state.error!.message, onRetry: _loadContent),
+            _ErrorBanner(
+              message: localizeFailure(
+                AppLocalizations.of(context)!,
+                state.error!,
+              ),
+              onRetry: _loadContent,
+            ),
           if (state.isLoading) const LinearProgressIndicator(),
           const SizedBox(height: 8),
           ...state.items.map(
@@ -465,20 +504,20 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog<void>(
       context: context,
       builder:
-          (dialogContext) => AlertDialog(
-            title: const Text('Link unavailable'),
-            content: const Text('Could not open this link.'),
+          (context) => AlertDialog(
+            title: Text(AppLocalizations.of(context)!.linkUnavailable),
+            content: Text(AppLocalizations.of(context)!.openLinkFailed),
             actions: [
               TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('Close'),
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(AppLocalizations.of(context)!.close),
               ),
               FilledButton(
                 onPressed: () {
-                  Navigator.of(dialogContext).pop();
+                  Navigator.of(context).pop();
                   _openLink(link);
                 },
-                child: const Text('Retry'),
+                child: Text(AppLocalizations.of(context)!.retry),
               ),
             ],
           ),
@@ -511,29 +550,38 @@ class _EmptyContentState extends StatelessWidget {
               hasError ? Icons.cloud_off_outlined : Icons.bookmark_border,
               size: 56,
               color: Theme.of(context).colorScheme.primary,
-              semanticLabel: hasError ? 'Database error' : 'No saved content',
+              semanticLabel:
+                  hasError
+                      ? AppLocalizations.of(context)!.databaseError
+                      : AppLocalizations.of(context)!.noSavedContent,
             ),
             const SizedBox(height: 16),
             Text(
-              hasError ? 'Could not load content' : 'Belum ada konten',
+              hasError
+                  ? AppLocalizations.of(context)!.loadContentFailed
+                  : AppLocalizations.of(context)!.emptyContent,
               style: Theme.of(context).textTheme.headlineSmall,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               hasError
-                  ? errorMessage ?? 'Please try again.'
-                  : 'Save something you want to continue later.',
+                  ? errorMessage ??
+                      AppLocalizations.of(context)!.tryAgainMessage
+                  : AppLocalizations.of(context)!.emptyContentHint,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
             if (hasError)
-              OutlinedButton(onPressed: onRetry, child: const Text('Try again'))
+              OutlinedButton(
+                onPressed: onRetry,
+                child: Text(AppLocalizations.of(context)!.tryAgain),
+              )
             else
               FilledButton.icon(
                 onPressed: onAdd,
                 icon: const Icon(Icons.add),
-                label: const Text('Add Content'),
+                label: Text(AppLocalizations.of(context)!.addContent),
               ),
           ],
         ),
@@ -559,11 +607,11 @@ class _NoSearchResultsState extends StatelessWidget {
               Icons.search_off,
               size: 56,
               color: Theme.of(context).colorScheme.primary,
-              semanticLabel: 'No search results',
+              semanticLabel: AppLocalizations.of(context)!.noSearchResults,
             ),
             const SizedBox(height: 16),
             Text(
-              'No content matches your search.',
+              AppLocalizations.of(context)!.noContentMatches,
               style: Theme.of(context).textTheme.headlineSmall,
               textAlign: TextAlign.center,
             ),
@@ -571,7 +619,7 @@ class _NoSearchResultsState extends StatelessWidget {
             OutlinedButton(
               key: const ValueKey('clear-search-empty-state'),
               onPressed: onClear,
-              child: const Text('Clear search'),
+              child: Text(AppLocalizations.of(context)!.clearSearch),
             ),
           ],
         ),
@@ -612,8 +660,8 @@ class _SearchField extends StatelessWidget {
                 onChanged: onChanged,
                 textInputAction: TextInputAction.search,
                 decoration: InputDecoration(
-                  labelText: 'Search content',
-                  hintText: 'Name, tag, or note',
+                  labelText: AppLocalizations.of(context)!.searchContent,
+                  hintText: AppLocalizations.of(context)!.searchHint,
                   prefixIcon: const Icon(Icons.search),
                   suffixIcon:
                       controller.text.isEmpty
@@ -621,7 +669,7 @@ class _SearchField extends StatelessWidget {
                           : IconButton(
                             key: const ValueKey('clear-content-search'),
                             onPressed: onClear,
-                            tooltip: 'Clear search',
+                            tooltip: AppLocalizations.of(context)!.clearSearch,
                             icon: const Icon(Icons.clear),
                           ),
                   border: const OutlineInputBorder(),
@@ -662,8 +710,8 @@ class _TagFilter extends StatelessWidget {
                 4,
               ),
               child: InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: 'Filter by tag',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.filterByTag,
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.label_outline),
                 ),
@@ -672,13 +720,13 @@ class _TagFilter extends StatelessWidget {
                     key: const ValueKey('content-tag-filter'),
                     value: selectedTagId,
                     isExpanded: true,
-                    hint: const Text('All tags'),
+                    hint: Text(AppLocalizations.of(context)!.allTags),
                     onChanged: onChanged,
                     items: [
-                      const DropdownMenuItem<String?>(
+                      DropdownMenuItem<String?>(
                         key: ValueKey('tag-filter-option-all'),
                         value: null,
-                        child: Text('All tags'),
+                        child: Text(AppLocalizations.of(context)!.allTags),
                       ),
                       ...tags.map(
                         (tag) => DropdownMenuItem<String?>(
@@ -711,9 +759,12 @@ class _ErrorBanner extends StatelessWidget {
       color: Theme.of(context).colorScheme.errorContainer,
       child: ListTile(
         leading: const Icon(Icons.error_outline),
-        title: const Text('Saved data was not changed'),
+        title: Text(AppLocalizations.of(context)!.dataUnchanged),
         subtitle: Text(message),
-        trailing: TextButton(onPressed: onRetry, child: const Text('Retry')),
+        trailing: TextButton(
+          onPressed: onRetry,
+          child: Text(AppLocalizations.of(context)!.retry),
+        ),
       ),
     );
   }
@@ -741,7 +792,7 @@ class _ContentListTileState extends State<_ContentListTile> {
   void initState() {
     super.initState();
     _openFocusNode = FocusNode(
-      debugLabel: 'Open latest link',
+      debugLabel: 'latest-link-focus',
       onKeyEvent: (node, event) {
         if (event is KeyDownEvent &&
             event.logicalKey == LogicalKeyboardKey.enter) {
@@ -799,13 +850,14 @@ class _ContentListTileState extends State<_ContentListTile> {
                     ],
                     const SizedBox(height: 8),
                     Text(
-                      item.latestPreview ?? 'No detail saved yet',
+                      item.latestPreview ??
+                          AppLocalizations.of(context)!.noDetail,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Latest · $latest, $time',
+                      AppLocalizations.of(context)!.latestAt('$latest, $time'),
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
@@ -815,11 +867,11 @@ class _ContentListTileState extends State<_ContentListTile> {
                 key: ValueKey('open-latest-${item.content.id}'),
                 focusNode: _openFocusNode,
                 onPressed: widget.onOpenLatest,
-                icon: const Icon(
+                icon: Icon(
                   Icons.open_in_new,
-                  semanticLabel: 'Open latest link',
+                  semanticLabel: AppLocalizations.of(context)!.openLatestLink,
                 ),
-                tooltip: 'Open latest link',
+                tooltip: AppLocalizations.of(context)!.openLatestLink,
               ),
             ],
           ),

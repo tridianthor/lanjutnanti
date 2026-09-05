@@ -1,3 +1,5 @@
+import 'package:lanjut_nanti/features/settings/application/locale_controller.dart';
+import 'package:lanjut_nanti/features/settings/data/locale_preference_repository.dart';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
@@ -21,6 +23,7 @@ class AppDependencies {
     required this.clock,
     required this.idGenerator,
     this.database,
+    this.localeController,
     this.contentController,
     this.tagService,
     this.backupExportController,
@@ -40,6 +43,10 @@ class AppDependencies {
     final database = AppDatabase.open(
       '${directory.path}${Platform.pathSeparator}lanjut_nanti.sqlite',
     );
+    final localeController = LocaleController(
+      SqliteLocalePreferenceRepository(database),
+    );
+    await localeController.load();
     final clock = const SystemClock();
     final idGenerator = RandomIdGenerator();
     final contentRepository = SqliteContentRepository(
@@ -75,6 +82,7 @@ class AppDependencies {
       clock: clock,
       idGenerator: idGenerator,
       database: database,
+      localeController: localeController,
       contentController: ContentListController(service: service),
       tagService: TagApplicationService(tagRepository),
       backupExportController: backupExportController,
@@ -82,6 +90,7 @@ class AppDependencies {
     );
   }
 
+  final LocaleController? localeController;
   final Clock clock;
   final IdGenerator idGenerator;
   final AppDatabase? database;

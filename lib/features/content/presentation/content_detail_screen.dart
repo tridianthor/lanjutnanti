@@ -1,3 +1,5 @@
+import 'package:lanjut_nanti/l10n/application_failure_localization.dart';
+import 'package:lanjut_nanti/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lanjut_nanti/core/links/link_launcher.dart';
@@ -28,7 +30,7 @@ class ContentDetailScreen extends StatefulWidget {
 
 class _ContentDetailScreenState extends State<ContentDetailScreen> {
   ContentDetailView? _view;
-  String? _errorMessage;
+  ApplicationFailure? _errorMessage;
   bool _loading = true;
   bool _busy = false;
 
@@ -54,7 +56,10 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = _failureMessage(error, 'Could not load this content.');
+        _errorMessage = mapApplicationFailure(
+          error,
+          operation: 'load content details',
+        );
         _loading = false;
         _busy = false;
       });
@@ -66,19 +71,21 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
     final view = _view;
     return Scaffold(
       appBar: AppBar(
-        title: Text(view?.content.name ?? 'Content details'),
+        title: Text(
+          view?.content.name ?? AppLocalizations.of(context)!.contentDetails,
+        ),
         actions: [
           if (view != null)
             IconButton(
               onPressed: _busy ? null : _editContent,
               icon: const Icon(Icons.edit_outlined),
-              tooltip: 'Edit content',
+              tooltip: AppLocalizations.of(context)!.editContentAction,
             ),
           if (view != null)
             IconButton(
               onPressed: _busy ? null : _deleteContent,
               icon: const Icon(Icons.delete_outline),
-              tooltip: 'Delete content',
+              tooltip: AppLocalizations.of(context)!.deleteContent,
             ),
         ],
       ),
@@ -89,7 +96,7 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
               : FloatingActionButton.extended(
                 onPressed: _busy ? null : _addDetail,
                 icon: const Icon(Icons.add),
-                label: const Text('Add Detail'),
+                label: Text(AppLocalizations.of(context)!.addDetail),
               ),
     );
   }
@@ -100,7 +107,13 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
     }
     if (view == null) {
       return _DetailErrorState(
-        message: _errorMessage ?? 'Could not load this content.',
+        message:
+            _errorMessage == null
+                ? AppLocalizations.of(context)!.loadContentFailed
+                : localizeFailure(
+                  AppLocalizations.of(context)!,
+                  _errorMessage!,
+                ),
         onRetry: _loadDetails,
       );
     }
@@ -120,7 +133,10 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
                 children: [
                   if (_errorMessage != null)
                     _DetailErrorBanner(
-                      message: _errorMessage!,
+                      message: localizeFailure(
+                        AppLocalizations.of(context)!,
+                        _errorMessage!,
+                      ),
                       onRetry: _loadDetails,
                     ),
                   if (_busy) const LinearProgressIndicator(),
@@ -129,24 +145,24 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        'History',
+                        AppLocalizations.of(context)!.history,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const Spacer(),
                       Text(
-                        '${view.history.length} ${view.history.length == 1 ? 'detail' : 'details'}',
+                        AppLocalizations.of(
+                          context,
+                        )!.detailCount(view.history.length),
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   if (view.history.isEmpty)
-                    const Card(
+                    Card(
                       child: Padding(
                         padding: EdgeInsets.all(20),
-                        child: Text(
-                          'No details saved yet. Add your first continuation link.',
-                        ),
+                        child: Text(AppLocalizations.of(context)!.emptyHistory),
                       ),
                     )
                   else
@@ -181,18 +197,18 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
                         color: Theme.of(context).colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text('Latest'),
+                      child: Text(AppLocalizations.of(context)!.latest),
                     ),
                   const Spacer(),
                   IconButton(
                     onPressed: _busy ? null : () => _editDetail(detail),
                     icon: const Icon(Icons.edit_outlined),
-                    tooltip: 'Edit detail',
+                    tooltip: AppLocalizations.of(context)!.editDetailAction,
                   ),
                   IconButton(
                     onPressed: _busy ? null : () => _deleteDetail(detail),
                     icon: const Icon(Icons.delete_outline),
-                    tooltip: 'Delete detail',
+                    tooltip: AppLocalizations.of(context)!.deleteDetail,
                   ),
                 ],
               ),
@@ -210,7 +226,9 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
               ],
               const SizedBox(height: 10),
               Text(
-                'Updated ${_formatTimestamp(context, detail.updatedAt)}',
+                AppLocalizations.of(
+                  context,
+                )!.updatedAt(_formatTimestamp(context, detail.updatedAt)),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 8),
@@ -219,7 +237,7 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
                 child: OutlinedButton.icon(
                   onPressed: _busy ? null : () => _openLink(detail.link),
                   icon: const Icon(Icons.open_in_new),
-                  label: const Text('Open link'),
+                  label: Text(AppLocalizations.of(context)!.openLink),
                 ),
               ),
             ],
@@ -290,9 +308,9 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
 
   Future<void> _deleteDetail(ContentDetail detail) async {
     final confirmed = await _confirm(
-      title: 'Delete detail?',
-      message: 'This saved checkpoint will be removed from history.',
-      confirmLabel: 'Delete detail',
+      title: (l) => l.deleteDetailTitle,
+      message: (l) => l.deleteDetailMessage,
+      confirmLabel: (l) => l.deleteDetail,
     );
     if (!mounted || !confirmed) return;
 
@@ -311,8 +329,12 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
       setState(() {
         _busy = false;
         _errorMessage =
-            widget.controller.state.error?.message ??
-            'Could not delete this detail. Your saved data was not changed.';
+            widget.controller.state.error ??
+            ApplicationFailure(
+              kind: ApplicationFailureKind.unknown,
+              message:
+                  'Could not delete this detail. Your saved data was not changed.',
+            );
       });
     }
   }
@@ -321,9 +343,9 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
     final view = _view;
     if (view == null) return;
     final confirmed = await _confirm(
-      title: 'Delete content?',
-      message: 'This removes the content and all of its saved history.',
-      confirmLabel: 'Delete content',
+      title: (l) => l.deleteContentTitle,
+      message: (l) => l.deleteContentMessage,
+      confirmLabel: (l) => l.deleteContent,
     );
     if (!mounted || !confirmed) return;
 
@@ -342,16 +364,20 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
       setState(() {
         _busy = false;
         _errorMessage =
-            widget.controller.state.error?.message ??
-            'Could not delete this content. Your saved data was not changed.';
+            widget.controller.state.error ??
+            ApplicationFailure(
+              kind: ApplicationFailureKind.unknown,
+              message:
+                  'Could not delete this content. Your saved data was not changed.',
+            );
       });
     }
   }
 
   Future<bool> _confirm({
-    required String title,
-    required String message,
-    required String confirmLabel,
+    required String Function(AppLocalizations) title,
+    required String Function(AppLocalizations) message,
+    required String Function(AppLocalizations) confirmLabel,
   }) async {
     return await showDialog<bool>(
           context: context,
@@ -368,16 +394,16 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
                   return KeyEventResult.ignored;
                 },
                 child: AlertDialog(
-                  title: Text(title),
-                  content: Text(message),
+                  title: Text(title(AppLocalizations.of(context)!)),
+                  content: Text(message(AppLocalizations.of(context)!)),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(false),
-                      child: const Text('Cancel'),
+                      child: Text(AppLocalizations.of(context)!.cancel),
                     ),
                     FilledButton(
                       onPressed: () => Navigator.of(context).pop(true),
-                      child: Text(confirmLabel),
+                      child: Text(confirmLabel(AppLocalizations.of(context)!)),
                     ),
                   ],
                 ),
@@ -399,20 +425,20 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
     showDialog<void>(
       context: context,
       builder:
-          (dialogContext) => AlertDialog(
-            title: const Text('Link unavailable'),
-            content: const Text('Could not open this link.'),
+          (context) => AlertDialog(
+            title: Text(AppLocalizations.of(context)!.linkUnavailable),
+            content: Text(AppLocalizations.of(context)!.openLinkFailed),
             actions: [
               TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('Close'),
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(AppLocalizations.of(context)!.close),
               ),
               FilledButton(
                 onPressed: () {
-                  Navigator.of(dialogContext).pop();
+                  Navigator.of(context).pop();
                   _openLink(link);
                 },
-                child: const Text('Retry'),
+                child: Text(AppLocalizations.of(context)!.retry),
               ),
             ],
           ),
@@ -469,7 +495,10 @@ class _DetailErrorState extends StatelessWidget {
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            OutlinedButton(onPressed: onRetry, child: const Text('Try again')),
+            OutlinedButton(
+              onPressed: onRetry,
+              child: Text(AppLocalizations.of(context)!.tryAgain),
+            ),
           ],
         ),
       ),
@@ -489,14 +518,13 @@ class _DetailErrorBanner extends StatelessWidget {
       color: Theme.of(context).colorScheme.errorContainer,
       child: ListTile(
         leading: const Icon(Icons.error_outline),
-        title: const Text('Saved data was not changed'),
+        title: Text(AppLocalizations.of(context)!.dataUnchanged),
         subtitle: Text(message),
-        trailing: TextButton(onPressed: onRetry, child: const Text('Retry')),
+        trailing: TextButton(
+          onPressed: onRetry,
+          child: Text(AppLocalizations.of(context)!.retry),
+        ),
       ),
     );
   }
-}
-
-String _failureMessage(Object error, String fallback) {
-  return error is ApplicationFailure ? error.message : fallback;
 }

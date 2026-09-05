@@ -11,6 +11,8 @@ import 'package:lanjut_nanti/features/content/application/content_application_se
 import 'package:lanjut_nanti/features/content/application/content_list_controller.dart';
 import 'package:lanjut_nanti/features/content/data/content_detail_repository.dart';
 import 'package:lanjut_nanti/features/content/data/content_repository.dart';
+import 'package:lanjut_nanti/features/settings/application/locale_controller.dart';
+import 'package:lanjut_nanti/features/settings/data/locale_preference_repository.dart';
 import 'package:lanjut_nanti/features/tags/application/tag_application_service.dart';
 import 'package:lanjut_nanti/features/tags/data/tag_repository.dart';
 
@@ -24,6 +26,7 @@ class Phase9AppInstance {
     required this.tagRepository,
     required this.contentController,
     required this.tagService,
+    required this.localeController,
     required this.dependencies,
     this.exportController,
     this.restoreController,
@@ -75,10 +78,14 @@ class Phase9AppInstance {
               restoreRepository: SqliteBackupRestoreRepository(database),
               fileGateway: restoreGateway,
             );
+    final localeController = LocaleController(
+      SqliteLocalePreferenceRepository(database),
+    );
     final dependencies = AppDependencies(
       clock: clock,
       idGenerator: idGenerator,
       database: database,
+      localeController: localeController,
       contentController: contentController,
       tagService: tagService,
       backupExportController: exportController,
@@ -92,6 +99,7 @@ class Phase9AppInstance {
       tagRepository: tagRepository,
       contentController: contentController,
       tagService: tagService,
+      localeController: localeController,
       exportController: exportController,
       restoreController: restoreController,
       dependencies: dependencies,
@@ -104,11 +112,13 @@ class Phase9AppInstance {
   final SqliteTagRepository tagRepository;
   final ContentListController contentController;
   final TagApplicationService tagService;
+  final LocaleController localeController;
   final BackupExportController? exportController;
   final BackupRestoreController? restoreController;
   final AppDependencies dependencies;
 
   void dispose() {
+    localeController.dispose();
     contentController.dispose();
     exportController?.dispose();
     restoreController?.dispose();

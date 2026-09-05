@@ -257,6 +257,9 @@ ApplicationFailure _asFailure(
   final failure = mapApplicationFailure(error, operation: operation);
   return ApplicationFailure(
     kind: failure.kind,
+    operation: failure.operation,
+    code: failure.code,
+    field: failure.field,
     message: failure.message,
     cause: failure.cause,
     stackTrace: failure.stackTrace ?? stackTrace,

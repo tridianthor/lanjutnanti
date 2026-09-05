@@ -1,3 +1,6 @@
+import 'package:lanjut_nanti/core/errors/application_failure.dart';
+import 'package:lanjut_nanti/l10n/application_failure_localization.dart';
+import 'package:lanjut_nanti/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:lanjut_nanti/core/links/link_launcher.dart';
 import 'package:lanjut_nanti/features/content/application/content_list_controller.dart';
@@ -26,8 +29,8 @@ class DetailFormScreen extends StatefulWidget {
 class _DetailFormScreenState extends State<DetailFormScreen> {
   late final TextEditingController _linkController;
   late final TextEditingController _noteController;
-  String? _linkError;
-  String? _formError;
+  bool _linkError = false;
+  ApplicationFailure? _formError;
   bool _busy = false;
 
   @override
@@ -52,7 +55,11 @@ class _DetailFormScreenState extends State<DetailFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isEditing ? 'Edit Detail' : 'Add Detail'),
+        title: Text(
+          widget.isEditing
+              ? AppLocalizations.of(context)!.editDetail
+              : AppLocalizations.of(context)!.addDetail,
+        ),
       ),
       body: SafeArea(
         child: LayoutBuilder(
@@ -82,8 +89,8 @@ class _DetailFormScreenState extends State<DetailFormScreen> {
       children: [
         Text(
           widget.isEditing
-              ? 'Correct this saved continuation point'
-              : 'Save where you stopped',
+              ? AppLocalizations.of(context)!.editDetailHint
+              : AppLocalizations.of(context)!.createDetailHint,
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 20),
@@ -94,13 +101,16 @@ class _DetailFormScreenState extends State<DetailFormScreen> {
           keyboardType: TextInputType.url,
           textInputAction: TextInputAction.next,
           decoration: InputDecoration(
-            labelText: 'Link',
+            labelText: AppLocalizations.of(context)!.link,
             hintText: 'https://…',
             border: const OutlineInputBorder(),
-            errorText: _linkError,
+            errorText:
+                _linkError
+                    ? AppLocalizations.of(context)!.validLinkRequired
+                    : null,
           ),
           onChanged: (_) {
-            if (_linkError != null) setState(() => _linkError = null);
+            if (_linkError) setState(() => _linkError = false);
           },
         ),
         const SizedBox(height: 16),
@@ -110,9 +120,9 @@ class _DetailFormScreenState extends State<DetailFormScreen> {
           minLines: 3,
           maxLines: 6,
           textInputAction: TextInputAction.done,
-          decoration: const InputDecoration(
-            labelText: 'Note (optional)',
-            hintText: 'Add a reminder for next time',
+          decoration: InputDecoration(
+            labelText: AppLocalizations.of(context)!.optionalNote,
+            hintText: AppLocalizations.of(context)!.noteHint,
             border: OutlineInputBorder(),
             alignLabelWithHint: true,
           ),
@@ -121,7 +131,7 @@ class _DetailFormScreenState extends State<DetailFormScreen> {
         if (_formError != null) ...[
           const SizedBox(height: 12),
           Text(
-            _formError!,
+            localizeFailure(AppLocalizations.of(context)!, _formError!),
             key: const Key('detail-form-error'),
             style: TextStyle(color: Colors.red),
           ),
@@ -136,7 +146,11 @@ class _DetailFormScreenState extends State<DetailFormScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                   : const Icon(Icons.save_outlined),
-          label: Text(widget.isEditing ? 'Save Changes' : 'Save Detail'),
+          label: Text(
+            widget.isEditing
+                ? AppLocalizations.of(context)!.saveChanges
+                : AppLocalizations.of(context)!.saveDetail,
+          ),
         ),
       ],
     );
@@ -148,14 +162,14 @@ class _DetailFormScreenState extends State<DetailFormScreen> {
       ContentDetail.normalizeLink(rawLink);
     } on ArgumentError {
       setState(() {
-        _linkError = 'Enter a valid absolute link.';
+        _linkError = true;
         _formError = null;
       });
       return;
     }
 
     setState(() {
-      _linkError = null;
+      _linkError = false;
       _formError = null;
       _busy = true;
     });
@@ -177,8 +191,12 @@ class _DetailFormScreenState extends State<DetailFormScreen> {
       setState(() {
         _busy = false;
         _formError =
-            widget.controller.state.error?.message ??
-            'Could not save this detail. Your entered values are still here.';
+            widget.controller.state.error ??
+            ApplicationFailure(
+              kind: ApplicationFailureKind.unknown,
+              message:
+                  'Could not save this detail. Your entered values are still here.',
+            );
       });
       return;
     }

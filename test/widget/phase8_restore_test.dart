@@ -1,3 +1,4 @@
+import 'package:lanjut_nanti/l10n/app_localizations.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -47,6 +48,9 @@ void main() {
 
   Widget app() {
     return MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('en'),
       home: HomeScreen(
         controller: contentController,
         backupRestoreController: restoreController,

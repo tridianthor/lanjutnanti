@@ -148,6 +148,7 @@ class ContentApplicationService {
         throw ApplicationFailure(
           kind: ApplicationFailureKind.notFound,
           message: 'The requested content could not be found.',
+          code: FailureCode.contentNotFound,
         );
       }
       final tag =
@@ -249,6 +250,7 @@ class ContentApplicationService {
       throw ApplicationFailure(
         kind: ApplicationFailureKind.database,
         message: 'The detail was saved, but its content could not be reloaded.',
+        code: FailureCode.savedReloadFailed,
       );
     }
     return content;

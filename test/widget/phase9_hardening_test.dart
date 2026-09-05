@@ -1,3 +1,4 @@
+import 'package:lanjut_nanti/l10n/app_localizations.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -199,6 +200,9 @@ Widget _app(
   BackupRestoreController? restore,
 }) {
   return MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    locale: const Locale('en'),
     theme: ThemeData(
       colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
       useMaterial3: true,

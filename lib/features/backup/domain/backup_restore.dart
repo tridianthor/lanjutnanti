@@ -6,11 +6,41 @@ import 'package:lanjut_nanti/features/content/domain/content.dart';
 import 'package:lanjut_nanti/features/content/domain/content_detail.dart';
 import 'package:lanjut_nanti/features/tags/domain/tag.dart';
 
+enum BackupIssueCode {
+  invalidUtf8,
+  invalidJson,
+  rootObject,
+  schemaVersion,
+  timestampRequired,
+  tagNameEmpty,
+  ownershipType,
+  missingTag,
+  contentNameEmpty,
+  missingContent,
+  absoluteLink,
+  arrayRequired,
+  objectRequired,
+  uuidRequired,
+  stringRequired,
+  nullableRequired,
+  nullableString,
+  invalidTimestamp,
+  duplicateId,
+  duplicateTag,
+}
+
 /// A single problem found while decoding a backup.
 class BackupValidationIssue {
-  const BackupValidationIssue({required this.path, required this.message});
+  const BackupValidationIssue({
+    required this.path,
+    required this.message,
+    this.code = BackupIssueCode.invalidJson,
+    this.reference,
+  });
 
   final String path;
+  final BackupIssueCode code;
+  final String? reference;
   final String message;
 
   @override
@@ -105,6 +135,7 @@ class BackupRestoreValidator {
         issues: const [
           BackupValidationIssue(
             path: 'file',
+            code: BackupIssueCode.invalidUtf8,
             message: 'The file is not valid UTF-8 JSON.',
           ),
         ],
@@ -121,6 +152,7 @@ class BackupRestoreValidator {
         issues: const [
           BackupValidationIssue(
             path: 'file',
+            code: BackupIssueCode.invalidJson,
             message: 'The file is not valid JSON.',
           ),
         ],
@@ -132,6 +164,7 @@ class BackupRestoreValidator {
         issues: const [
           BackupValidationIssue(
             path: r'$',
+            code: BackupIssueCode.rootObject,
             message: 'The backup top level must be a JSON object.',
           ),
         ],
@@ -145,6 +178,7 @@ class BackupRestoreValidator {
       issues.add(
         const BackupValidationIssue(
           path: 'schema_version',
+          code: BackupIssueCode.schemaVersion,
           message: 'Only schema version 1 is supported.',
         ),
       );
@@ -156,6 +190,7 @@ class BackupRestoreValidator {
       issues.add(
         const BackupValidationIssue(
           path: 'exported_at',
+          code: BackupIssueCode.timestampRequired,
           message: 'A timestamp string is required.',
         ),
       );
@@ -200,6 +235,7 @@ class BackupRestoreValidator {
           issues.add(
             BackupValidationIssue(
               path: '$path.name',
+              code: BackupIssueCode.tagNameEmpty,
               message: 'The tag name must not be empty.',
             ),
           );
@@ -231,6 +267,7 @@ class BackupRestoreValidator {
           issues.add(
             BackupValidationIssue(
               path: '$path.user_id',
+              code: BackupIssueCode.ownershipType,
               message: 'Ownership data must be a string or null.',
             ),
           );
@@ -239,6 +276,7 @@ class BackupRestoreValidator {
           issues.add(
             BackupValidationIssue(
               path: '$path.tag_id',
+              code: BackupIssueCode.missingTag,
               message: 'The referenced tag does not exist in this backup.',
             ),
           );
@@ -266,6 +304,7 @@ class BackupRestoreValidator {
           issues.add(
             BackupValidationIssue(
               path: '$path.name',
+              code: BackupIssueCode.contentNameEmpty,
               message: 'The content name must not be empty.',
             ),
           );
@@ -289,6 +328,7 @@ class BackupRestoreValidator {
           issues.add(
             BackupValidationIssue(
               path: '$path.content_id',
+              code: BackupIssueCode.missingContent,
               message: 'The referenced content does not exist in this backup.',
             ),
           );
@@ -301,6 +341,7 @@ class BackupRestoreValidator {
             issues.add(
               BackupValidationIssue(
                 path: '$path.link',
+                code: BackupIssueCode.absoluteLink,
                 message: 'The link must be a non-empty absolute URI.',
               ),
             );
@@ -370,7 +411,11 @@ List<Object?>? _collection(
   final value = document[key];
   if (value is! List) {
     issues.add(
-      BackupValidationIssue(path: key, message: 'A JSON array is required.'),
+      BackupValidationIssue(
+        path: key,
+        code: BackupIssueCode.arrayRequired,
+        message: 'A JSON array is required.',
+      ),
     );
     return null;
   }
@@ -384,7 +429,11 @@ Map<Object?, Object?>? _entityMap(
 ) {
   if (value is! Map) {
     issues.add(
-      BackupValidationIssue(path: path, message: 'A JSON object is required.'),
+      BackupValidationIssue(
+        path: path,
+        code: BackupIssueCode.objectRequired,
+        message: 'A JSON object is required.',
+      ),
     );
     return null;
   }
@@ -403,7 +452,11 @@ String? _requiredId(
         caseSensitive: false,
       ).hasMatch(value)) {
     issues.add(
-      BackupValidationIssue(path: path, message: 'A valid UUID is required.'),
+      BackupValidationIssue(
+        path: path,
+        code: BackupIssueCode.uuidRequired,
+        message: 'A valid UUID is required.',
+      ),
     );
     return null;
   }
@@ -421,6 +474,7 @@ String? _requiredString(
     issues.add(
       BackupValidationIssue(
         path: '$path.$key',
+        code: BackupIssueCode.stringRequired,
         message: 'A string value is required.',
       ),
     );
@@ -439,6 +493,7 @@ String? _nullableRequiredString(
     issues.add(
       BackupValidationIssue(
         path: '$path.$key',
+        code: BackupIssueCode.nullableRequired,
         message: 'The field is required and may be null.',
       ),
     );
@@ -449,6 +504,7 @@ String? _nullableRequiredString(
     issues.add(
       BackupValidationIssue(
         path: '$path.$key',
+        code: BackupIssueCode.nullableString,
         message: 'The value must be a string or null.',
       ),
     );
@@ -467,6 +523,7 @@ DateTime? _requiredTimestamp(
     issues.add(
       BackupValidationIssue(
         path: '$path.$key',
+        code: BackupIssueCode.timestampRequired,
         message: 'A timestamp string is required.',
       ),
     );
@@ -477,6 +534,7 @@ DateTime? _requiredTimestamp(
     issues.add(
       BackupValidationIssue(
         path: '$path.$key',
+        code: BackupIssueCode.timestampRequired,
         message: 'A timestamp string is required.',
       ),
     );
@@ -496,6 +554,7 @@ DateTime? _parseTimestamp(
     issues.add(
       BackupValidationIssue(
         path: path,
+        code: BackupIssueCode.invalidTimestamp,
         message: 'The timestamp must be a valid ISO 8601 timestamp.',
       ),
     );
@@ -514,6 +573,8 @@ void _recordId(
     issues.add(
       BackupValidationIssue(
         path: '$path.id',
+        code: BackupIssueCode.duplicateId,
+        reference: firstPath,
         message: 'This ID duplicates $firstPath and must be unique.',
       ),
     );
@@ -534,6 +595,8 @@ void _rejectDuplicateTagNames(
       issues.add(
         BackupValidationIssue(
           path: 'tags',
+          code: BackupIssueCode.duplicateTag,
+          reference: firstId,
           message:
               'Tag names must be unique regardless of letter case '
               '(duplicate of $firstId).',

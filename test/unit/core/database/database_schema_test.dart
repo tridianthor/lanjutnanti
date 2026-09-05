@@ -15,7 +15,7 @@ void main() {
     database.dispose();
   });
 
-  test('creates the version 1 relational schema with foreign keys enabled', () {
+  test('creates the version 2 relational schema with foreign keys enabled', () {
     final tables =
         database.raw
             .select('''
@@ -30,12 +30,21 @@ void main() {
 
     expect(
       database.raw.select('PRAGMA user_version').single['user_version'],
-      1,
+      2,
     );
     expect(tables, ['content_details', 'contents', 'tags']);
     expect(
       database.raw.select('PRAGMA foreign_keys').single['foreign_keys'],
       1,
+    );
+  });
+
+  test('creates device settings outside content tables', () {
+    expect(
+      database.raw.select(
+        "SELECT name FROM sqlite_master WHERE name = 'app_settings'",
+      ),
+      hasLength(1),
     );
   });
 
@@ -86,7 +95,7 @@ void main() {
 
       expect(
         reopened.raw.select('PRAGMA user_version').single['user_version'],
-        1,
+        2,
       );
       expect(
         reopened.raw.select('SELECT name FROM tags').single['name'],

@@ -1,3 +1,5 @@
+import 'package:lanjut_nanti/l10n/application_failure_localization.dart';
+import 'package:lanjut_nanti/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lanjut_nanti/core/links/link_launcher.dart';
@@ -31,9 +33,9 @@ class _ContentFormScreenState extends State<ContentFormScreen> {
   late final TextEditingController _nameController;
   late String? _tagId;
   List<Tag> _tags = const [];
-  String? _nameError;
-  String? _formError;
-  String? _tagError;
+  bool _nameError = false;
+  ApplicationFailure? _formError;
+  ApplicationFailure? _tagError;
   bool _loadingTags = false;
   bool _busy = false;
 
@@ -61,7 +63,7 @@ class _ContentFormScreenState extends State<ContentFormScreen> {
         _tagId = null;
       }
     } catch (error) {
-      _tagError = _failureMessage(error, 'Could not load tags.');
+      _tagError = mapApplicationFailure(error, operation: 'load tags');
     }
   }
 
@@ -69,7 +71,11 @@ class _ContentFormScreenState extends State<ContentFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isEditing ? 'Edit Content' : 'Add Content'),
+        title: Text(
+          widget.isEditing
+              ? AppLocalizations.of(context)!.editContent
+              : AppLocalizations.of(context)!.addContent,
+        ),
       ),
       body: SafeArea(
         child: LayoutBuilder(
@@ -99,8 +105,8 @@ class _ContentFormScreenState extends State<ContentFormScreen> {
       children: [
         Text(
           widget.isEditing
-              ? 'Update your saved content'
-              : 'What do you want to continue?',
+              ? AppLocalizations.of(context)!.updateContentHint
+              : AppLocalizations.of(context)!.createContentHint,
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 20),
@@ -110,25 +116,31 @@ class _ContentFormScreenState extends State<ContentFormScreen> {
           enabled: !_busy,
           textInputAction: TextInputAction.next,
           decoration: InputDecoration(
-            labelText: 'Content name',
-            hintText: 'e.g. Doraemon',
+            labelText: AppLocalizations.of(context)!.contentName,
+            hintText: AppLocalizations.of(context)!.contentNameHint,
             border: const OutlineInputBorder(),
-            errorText: _nameError,
+            errorText:
+                _nameError
+                    ? AppLocalizations.of(context)!.contentNameRequired
+                    : null,
           ),
           onChanged: (_) {
-            if (_nameError != null) setState(() => _nameError = null);
+            if (_nameError) setState(() => _nameError = false);
           },
         ),
         const SizedBox(height: 16),
         DropdownButtonFormField<String>(
           value: _tagId ?? '',
           isExpanded: true,
-          decoration: const InputDecoration(
-            labelText: 'Tag (optional)',
+          decoration: InputDecoration(
+            labelText: AppLocalizations.of(context)!.optionalTag,
             border: OutlineInputBorder(),
           ),
           items: [
-            const DropdownMenuItem<String>(value: '', child: Text('No tag')),
+            DropdownMenuItem<String>(
+              value: '',
+              child: Text(AppLocalizations.of(context)!.noTag),
+            ),
             ..._tags.map(
               (tag) => DropdownMenuItem<String>(
                 value: tag.id,
@@ -146,7 +158,7 @@ class _ContentFormScreenState extends State<ContentFormScreen> {
         if (_tagError != null) ...[
           const SizedBox(height: 8),
           Text(
-            _tagError!,
+            localizeFailure(AppLocalizations.of(context)!, _tagError!),
             style: TextStyle(color: Theme.of(context).colorScheme.error),
           ),
         ],
@@ -157,14 +169,14 @@ class _ContentFormScreenState extends State<ContentFormScreen> {
             child: TextButton.icon(
               onPressed: _busy || _loadingTags ? null : _createTag,
               icon: const Icon(Icons.new_label_outlined),
-              label: const Text('Create tag'),
+              label: Text(AppLocalizations.of(context)!.createTag),
             ),
           ),
         ],
         if (_formError != null) ...[
           const SizedBox(height: 12),
           Text(
-            _formError!,
+            localizeFailure(AppLocalizations.of(context)!, _formError!),
             key: const Key('content-form-error'),
             style: TextStyle(color: Colors.red),
           ),
@@ -179,7 +191,11 @@ class _ContentFormScreenState extends State<ContentFormScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                   : const Icon(Icons.save_outlined),
-          label: Text(widget.isEditing ? 'Save Changes' : 'Save Content'),
+          label: Text(
+            widget.isEditing
+                ? AppLocalizations.of(context)!.saveChanges
+                : AppLocalizations.of(context)!.saveContent,
+          ),
         ),
       ],
     );
@@ -189,14 +205,14 @@ class _ContentFormScreenState extends State<ContentFormScreen> {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
       setState(() {
-        _nameError = 'Enter a content name.';
+        _nameError = true;
         _formError = null;
       });
       return;
     }
 
     setState(() {
-      _nameError = null;
+      _nameError = false;
       _formError = null;
       _busy = true;
     });
@@ -262,7 +278,7 @@ class _ContentFormScreenState extends State<ContentFormScreen> {
     } catch (error) {
       setState(() {
         _loadingTags = false;
-        _tagError = _failureMessage(error, 'Could not create tag.');
+        _tagError = mapApplicationFailure(error, operation: 'save tag');
       });
     }
   }
@@ -271,8 +287,12 @@ class _ContentFormScreenState extends State<ContentFormScreen> {
     setState(() {
       _busy = false;
       _formError =
-          widget.controller.state.error?.message ??
-          'Could not save your changes. Your entered values are still here.';
+          widget.controller.state.error ??
+          ApplicationFailure(
+            kind: ApplicationFailureKind.unknown,
+            message:
+                'Could not save your changes. Your entered values are still here.',
+          );
     });
   }
 }
@@ -286,7 +306,7 @@ class _CreateTagDialog extends StatefulWidget {
 
 class _CreateTagDialogState extends State<_CreateTagDialog> {
   final _controller = TextEditingController();
-  String? _error;
+  bool _error = false;
 
   @override
   void dispose() {
@@ -307,24 +327,28 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
         return KeyEventResult.ignored;
       },
       child: AlertDialog(
-        title: const Text('Create tag'),
+        title: Text(AppLocalizations.of(context)!.createTag),
         content: TextField(
           controller: _controller,
           autofocus: true,
           textInputAction: TextInputAction.done,
           decoration: InputDecoration(
-            labelText: 'Tag name',
+            labelText: AppLocalizations.of(context)!.tagName,
             border: const OutlineInputBorder(),
-            errorText: _error,
+            errorText:
+                _error ? AppLocalizations.of(context)!.tagNameRequired : null,
           ),
           onSubmitted: (_) => _submit(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
-          FilledButton(onPressed: _submit, child: const Text('Create')),
+          FilledButton(
+            onPressed: _submit,
+            child: Text(AppLocalizations.of(context)!.create),
+          ),
         ],
       ),
     );
@@ -332,13 +356,9 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
 
   void _submit() {
     if (_controller.text.trim().isEmpty) {
-      setState(() => _error = 'Enter a tag name.');
+      setState(() => _error = true);
       return;
     }
     Navigator.of(context).pop(_controller.text);
   }
-}
-
-String _failureMessage(Object error, String fallback) {
-  return error is ApplicationFailure ? error.message : fallback;
 }

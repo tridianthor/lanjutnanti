@@ -15,6 +15,6 @@ void main() {
     await tester.pumpWidget(const LanjutNantiApp());
 
     expect(find.text('Lanjut Nanti'), findsOneWidget);
-    expect(find.text('Belum ada konten'), findsOneWidget);
+    expect(find.text('No content yet'), findsOneWidget);
   });
 }

@@ -1,0 +1,615 @@
+{
+  "@@locale": "en",
+  "language": "Language",
+  "@language": {
+    "description": "Home language action and dialog title"
+  },
+  "systemDefault": "System default",
+  "@systemDefault": {
+    "description": "Follow device languages"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Application message: cancel"
+  },
+  "addContent": "Add Content",
+  "@addContent": {
+    "description": "Application message: addContent"
+  },
+  "retry": "Retry",
+  "@retry": {
+    "description": "Application message: retry"
+  },
+  "tryAgain": "Try again",
+  "@tryAgain": {
+    "description": "Application message: tryAgain"
+  },
+  "close": "Close",
+  "@close": {
+    "description": "Application message: close"
+  },
+  "databaseError": "Database error",
+  "@databaseError": {
+    "description": "Application message: databaseError"
+  },
+  "noSavedContent": "No saved content",
+  "@noSavedContent": {
+    "description": "Application message: noSavedContent"
+  },
+  "loadContentFailed": "Could not load content",
+  "@loadContentFailed": {
+    "description": "Application message: loadContentFailed"
+  },
+  "emptyContent": "No content yet",
+  "@emptyContent": {
+    "description": "Application message: emptyContent"
+  },
+  "tryAgainMessage": "Please try again.",
+  "@tryAgainMessage": {
+    "description": "Application message: tryAgainMessage"
+  },
+  "emptyContentHint": "Save something you want to continue later.",
+  "@emptyContentHint": {
+    "description": "Application message: emptyContentHint"
+  },
+  "noSearchResults": "No search results",
+  "@noSearchResults": {
+    "description": "Application message: noSearchResults"
+  },
+  "noContentMatches": "No content matches your search.",
+  "@noContentMatches": {
+    "description": "Application message: noContentMatches"
+  },
+  "clearSearch": "Clear search",
+  "@clearSearch": {
+    "description": "Application message: clearSearch"
+  },
+  "searchContent": "Search content",
+  "@searchContent": {
+    "description": "Application message: searchContent"
+  },
+  "searchHint": "Name, tag, or note",
+  "@searchHint": {
+    "description": "Application message: searchHint"
+  },
+  "filterByTag": "Filter by tag",
+  "@filterByTag": {
+    "description": "Application message: filterByTag"
+  },
+  "allTags": "All tags",
+  "@allTags": {
+    "description": "Application message: allTags"
+  },
+  "dataUnchanged": "Saved data was not changed",
+  "@dataUnchanged": {
+    "description": "Application message: dataUnchanged"
+  },
+  "noDetail": "No detail saved yet",
+  "@noDetail": {
+    "description": "Application message: noDetail"
+  },
+  "openLatestLink": "Open latest link",
+  "@openLatestLink": {
+    "description": "Application message: openLatestLink"
+  },
+  "linkUnavailable": "Link unavailable",
+  "@linkUnavailable": {
+    "description": "Application message: linkUnavailable"
+  },
+  "openLinkFailed": "Could not open this link.",
+  "@openLinkFailed": {
+    "description": "Application message: openLinkFailed"
+  },
+  "editContent": "Edit Content",
+  "@editContent": {
+    "description": "Application message: editContent"
+  },
+  "editContentAction": "Edit content",
+  "@editContentAction": {
+    "description": "Application message: editContentAction"
+  },
+  "updateContentHint": "Update your saved content",
+  "@updateContentHint": {
+    "description": "Application message: updateContentHint"
+  },
+  "createContentHint": "What do you want to continue?",
+  "@createContentHint": {
+    "description": "Application message: createContentHint"
+  },
+  "contentName": "Content name",
+  "@contentName": {
+    "description": "Application message: contentName"
+  },
+  "contentNameHint": "e.g. Doraemon",
+  "@contentNameHint": {
+    "description": "Application message: contentNameHint"
+  },
+  "optionalTag": "Tag (optional)",
+  "@optionalTag": {
+    "description": "Application message: optionalTag"
+  },
+  "noTag": "No tag",
+  "@noTag": {
+    "description": "Application message: noTag"
+  },
+  "createTag": "Create tag",
+  "@createTag": {
+    "description": "Application message: createTag"
+  },
+  "saveChanges": "Save Changes",
+  "@saveChanges": {
+    "description": "Application message: saveChanges"
+  },
+  "saveContent": "Save Content",
+  "@saveContent": {
+    "description": "Application message: saveContent"
+  },
+  "contentNameRequired": "Enter a content name.",
+  "@contentNameRequired": {
+    "description": "Application message: contentNameRequired"
+  },
+  "tagName": "Tag name",
+  "@tagName": {
+    "description": "Application message: tagName"
+  },
+  "create": "Create",
+  "@create": {
+    "description": "Application message: create"
+  },
+  "tagNameRequired": "Enter a tag name.",
+  "@tagNameRequired": {
+    "description": "Application message: tagNameRequired"
+  },
+  "editDetail": "Edit Detail",
+  "@editDetail": {
+    "description": "Application message: editDetail"
+  },
+  "addDetail": "Add Detail",
+  "@addDetail": {
+    "description": "Application message: addDetail"
+  },
+  "editDetailHint": "Correct this saved continuation point",
+  "@editDetailHint": {
+    "description": "Application message: editDetailHint"
+  },
+  "createDetailHint": "Save where you stopped",
+  "@createDetailHint": {
+    "description": "Application message: createDetailHint"
+  },
+  "link": "Link",
+  "@link": {
+    "description": "Application message: link"
+  },
+  "optionalNote": "Note (optional)",
+  "@optionalNote": {
+    "description": "Application message: optionalNote"
+  },
+  "noteHint": "Add a reminder for next time",
+  "@noteHint": {
+    "description": "Application message: noteHint"
+  },
+  "saveDetail": "Save Detail",
+  "@saveDetail": {
+    "description": "Application message: saveDetail"
+  },
+  "validLinkRequired": "Enter a valid absolute link.",
+  "@validLinkRequired": {
+    "description": "Application message: validLinkRequired"
+  },
+  "contentDetails": "Content details",
+  "@contentDetails": {
+    "description": "Application message: contentDetails"
+  },
+  "deleteContent": "Delete content",
+  "@deleteContent": {
+    "description": "Application message: deleteContent"
+  },
+  "history": "History",
+  "@history": {
+    "description": "Application message: history"
+  },
+  "emptyHistory": "No details saved yet. Add your first continuation link.",
+  "@emptyHistory": {
+    "description": "Application message: emptyHistory"
+  },
+  "latest": "Latest",
+  "@latest": {
+    "description": "Application message: latest"
+  },
+  "editDetailAction": "Edit detail",
+  "@editDetailAction": {
+    "description": "Application message: editDetailAction"
+  },
+  "deleteDetail": "Delete detail",
+  "@deleteDetail": {
+    "description": "Application message: deleteDetail"
+  },
+  "openLink": "Open link",
+  "@openLink": {
+    "description": "Application message: openLink"
+  },
+  "deleteDetailTitle": "Delete detail?",
+  "@deleteDetailTitle": {
+    "description": "Application message: deleteDetailTitle"
+  },
+  "deleteDetailMessage": "This saved checkpoint will be removed from history.",
+  "@deleteDetailMessage": {
+    "description": "Application message: deleteDetailMessage"
+  },
+  "deleteContentTitle": "Delete content?",
+  "@deleteContentTitle": {
+    "description": "Application message: deleteContentTitle"
+  },
+  "deleteContentMessage": "This removes the content and all of its saved history.",
+  "@deleteContentMessage": {
+    "description": "Application message: deleteContentMessage"
+  },
+  "exportBackup": "Export backup",
+  "@exportBackup": {
+    "description": "Application message: exportBackup"
+  },
+  "exportBackupTitle": "Export backup?",
+  "@exportBackupTitle": {
+    "description": "Application message: exportBackupTitle"
+  },
+  "export": "Export",
+  "@export": {
+    "description": "Application message: export"
+  },
+  "importBackup": "Import backup",
+  "@importBackup": {
+    "description": "Application message: importBackup"
+  },
+  "replaceLocalData": "Replace local data?",
+  "@replaceLocalData": {
+    "description": "Application message: replaceLocalData"
+  },
+  "replace": "Replace",
+  "@replace": {
+    "description": "Application message: replace"
+  },
+  "backupValidationFailed": "Backup validation failed",
+  "@backupValidationFailed": {
+    "description": "Application message: backupValidationFailed"
+  },
+  "languagePreferenceReadFailed": "Could not read your language preference. Using System default.",
+  "@languagePreferenceReadFailed": {
+    "description": "Application message: languagePreferenceReadFailed"
+  },
+  "languagePreferenceSaveFailed": "Could not save your language preference. Try selecting it again.",
+  "@languagePreferenceSaveFailed": {
+    "description": "Application message: languagePreferenceSaveFailed"
+  },
+  "exportPrivacy": "This backup may contain private links and notes. The destination you choose controls who can access the file.",
+  "@exportPrivacy": {
+    "description": "Application message: exportPrivacy"
+  },
+  "detailCount": "{count, plural, =0{0 details} one{1 detail} other{{count} details}}",
+  "@detailCount": {
+    "description": "Application message: detailCount",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "updatedAt": "Updated {timestamp}",
+  "@updatedAt": {
+    "description": "Application message: updatedAt",
+    "placeholders": {
+      "timestamp": {
+        "type": "String",
+        "example": "example"
+      }
+    }
+  },
+  "latestAt": "Latest · {timestamp}",
+  "@latestAt": {
+    "description": "Application message: latestAt",
+    "placeholders": {
+      "timestamp": {
+        "type": "String",
+        "example": "example"
+      }
+    }
+  },
+  "tagConflict": "A tag with that name already exists.",
+  "@tagConflict": {
+    "description": "Application message: tagConflict"
+  },
+  "failureDatabase": "Could not {operation}. Your saved data was not changed.",
+  "@failureDatabase": {
+    "description": "Application message: failureDatabase",
+    "placeholders": {
+      "operation": {
+        "type": "String",
+        "example": "example"
+      }
+    }
+  },
+  "failureUnknown": "Could not {operation}. Please try again.",
+  "@failureUnknown": {
+    "description": "Application message: failureUnknown",
+    "placeholders": {
+      "operation": {
+        "type": "String",
+        "example": "example"
+      }
+    }
+  },
+  "failureNotFound": "{operation} could not be completed because the record no longer exists.",
+  "@failureNotFound": {
+    "description": "Application message: failureNotFound",
+    "placeholders": {
+      "operation": {
+        "type": "String",
+        "example": "example"
+      }
+    }
+  },
+  "failureValidation": "Please check the entered values before trying to {operation}.",
+  "@failureValidation": {
+    "description": "Application message: failureValidation",
+    "placeholders": {
+      "operation": {
+        "type": "String",
+        "example": "example"
+      }
+    }
+  },
+  "failureField": "Enter a valid {field} to {operation}.",
+  "@failureField": {
+    "description": "Application message: failureField",
+    "placeholders": {
+      "field": {
+        "type": "String",
+        "example": "example"
+      },
+      "operation": {
+        "type": "String",
+        "example": "example"
+      }
+    }
+  },
+  "savedReloadFailed": "The detail was saved, but its content could not be reloaded.",
+  "@savedReloadFailed": {
+    "description": "Application message: savedReloadFailed"
+  },
+  "contentNotFound": "The requested content could not be found.",
+  "@contentNotFound": {
+    "description": "Application message: contentNotFound"
+  },
+  "operationLoadContent": "load content",
+  "@operationLoadContent": {
+    "description": "Application message: operationLoadContent"
+  },
+  "operationLoadContentDetails": "load content details",
+  "@operationLoadContentDetails": {
+    "description": "Application message: operationLoadContentDetails"
+  },
+  "operationSaveContent": "save content",
+  "@operationSaveContent": {
+    "description": "Application message: operationSaveContent"
+  },
+  "operationSaveDetail": "save detail",
+  "@operationSaveDetail": {
+    "description": "Application message: operationSaveDetail"
+  },
+  "operationDeleteDetail": "delete detail",
+  "@operationDeleteDetail": {
+    "description": "Application message: operationDeleteDetail"
+  },
+  "operationDeleteContent": "delete content",
+  "@operationDeleteContent": {
+    "description": "Application message: operationDeleteContent"
+  },
+  "operationSaveChanges": "save changes",
+  "@operationSaveChanges": {
+    "description": "Application message: operationSaveChanges"
+  },
+  "operationLoadTags": "load tags",
+  "@operationLoadTags": {
+    "description": "Application message: operationLoadTags"
+  },
+  "operationSaveTag": "save tag",
+  "@operationSaveTag": {
+    "description": "Application message: operationSaveTag"
+  },
+  "operationRenameTag": "rename tag",
+  "@operationRenameTag": {
+    "description": "Application message: operationRenameTag"
+  },
+  "operationDeleteTag": "delete tag",
+  "@operationDeleteTag": {
+    "description": "Application message: operationDeleteTag"
+  },
+  "operationExportBackup": "export backup",
+  "@operationExportBackup": {
+    "description": "Application message: operationExportBackup"
+  },
+  "operationRestoreBackup": "restore backup",
+  "@operationRestoreBackup": {
+    "description": "Application message: operationRestoreBackup"
+  },
+  "exportSuccess": "Backup exported successfully.",
+  "@exportSuccess": {
+    "description": "Application message: exportSuccess"
+  },
+  "exportCancelled": "Export cancelled. Your saved data was not changed.",
+  "@exportCancelled": {
+    "description": "Application message: exportCancelled"
+  },
+  "exportFailed": "Could not export backup. Please try again.",
+  "@exportFailed": {
+    "description": "Application message: exportFailed"
+  },
+  "issueInvalidUtf8": "The file is not valid UTF-8 JSON.",
+  "@issueInvalidUtf8": {
+    "description": "Application message: issueInvalidUtf8"
+  },
+  "issueInvalidJson": "The file is not valid JSON.",
+  "@issueInvalidJson": {
+    "description": "Application message: issueInvalidJson"
+  },
+  "issueRootObject": "The backup top level must be a JSON object.",
+  "@issueRootObject": {
+    "description": "Application message: issueRootObject"
+  },
+  "issueSchemaVersion": "Only schema version 1 is supported.",
+  "@issueSchemaVersion": {
+    "description": "Application message: issueSchemaVersion"
+  },
+  "issueTimestampRequired": "A timestamp string is required.",
+  "@issueTimestampRequired": {
+    "description": "Application message: issueTimestampRequired"
+  },
+  "issueTagNameEmpty": "The tag name must not be empty.",
+  "@issueTagNameEmpty": {
+    "description": "Application message: issueTagNameEmpty"
+  },
+  "issueOwnershipType": "Ownership data must be a string or null.",
+  "@issueOwnershipType": {
+    "description": "Application message: issueOwnershipType"
+  },
+  "issueMissingTag": "The referenced tag does not exist in this backup.",
+  "@issueMissingTag": {
+    "description": "Application message: issueMissingTag"
+  },
+  "issueContentNameEmpty": "The content name must not be empty.",
+  "@issueContentNameEmpty": {
+    "description": "Application message: issueContentNameEmpty"
+  },
+  "issueMissingContent": "The referenced content does not exist in this backup.",
+  "@issueMissingContent": {
+    "description": "Application message: issueMissingContent"
+  },
+  "issueAbsoluteLink": "The link must be a non-empty absolute URI.",
+  "@issueAbsoluteLink": {
+    "description": "Application message: issueAbsoluteLink"
+  },
+  "issueArrayRequired": "A JSON array is required.",
+  "@issueArrayRequired": {
+    "description": "Application message: issueArrayRequired"
+  },
+  "issueObjectRequired": "A JSON object is required.",
+  "@issueObjectRequired": {
+    "description": "Application message: issueObjectRequired"
+  },
+  "issueUuidRequired": "A valid UUID is required.",
+  "@issueUuidRequired": {
+    "description": "Application message: issueUuidRequired"
+  },
+  "issueStringRequired": "A string value is required.",
+  "@issueStringRequired": {
+    "description": "Application message: issueStringRequired"
+  },
+  "issueNullableRequired": "The field is required and may be null.",
+  "@issueNullableRequired": {
+    "description": "Application message: issueNullableRequired"
+  },
+  "issueNullableString": "The value must be a string or null.",
+  "@issueNullableString": {
+    "description": "Application message: issueNullableString"
+  },
+  "issueInvalidTimestamp": "The timestamp must be a valid ISO 8601 timestamp.",
+  "@issueInvalidTimestamp": {
+    "description": "Application message: issueInvalidTimestamp"
+  },
+  "issueDuplicateId": "This ID duplicates {reference} and must be unique.",
+  "@issueDuplicateId": {
+    "description": "Application message: issueDuplicateId",
+    "placeholders": {
+      "reference": {
+        "type": "String",
+        "example": "example"
+      }
+    }
+  },
+  "issueDuplicateTag": "Tag names must be unique regardless of letter case (duplicate of {reference}).",
+  "@issueDuplicateTag": {
+    "description": "Application message: issueDuplicateTag",
+    "placeholders": {
+      "reference": {
+        "type": "String",
+        "example": "example"
+      }
+    }
+  },
+  "validationSummary": "{count, plural, one{1 validation error.} other{{count} validation errors.}} Your saved data was not changed.",
+  "@validationSummary": {
+    "description": "Application message: validationSummary",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "additionalIssues": "{count, plural, one{1 more issue.} other{{count} more issues.}}",
+  "@additionalIssues": {
+    "description": "Application message: additionalIssues",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "restorePreview": "This valid backup contains {tags, plural, one{1 tag} other{{tags} tags}}, {contents, plural, one{1 content item} other{{contents} content items}}, and {details, plural, one{1 detail} other{{details} details}}. Confirming will replace all current local data.",
+  "@restorePreview": {
+    "description": "Application message: restorePreview",
+    "placeholders": {
+      "tags": {
+        "type": "int",
+        "example": "2"
+      },
+      "contents": {
+        "type": "int",
+        "example": "2"
+      },
+      "details": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "restoreSuccess": "Restored {tags, plural, one{1 tag} other{{tags} tags}}, {contents, plural, one{1 content item} other{{contents} content items}}, and {details, plural, one{1 detail} other{{details} details}}.",
+  "@restoreSuccess": {
+    "description": "Application message: restoreSuccess",
+    "placeholders": {
+      "tags": {
+        "type": "int",
+        "example": "2"
+      },
+      "contents": {
+        "type": "int",
+        "example": "2"
+      },
+      "details": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "restoreCancelled": "Import cancelled. Your saved data was not changed.",
+  "@restoreCancelled": {
+    "description": "Application message: restoreCancelled"
+  },
+  "restoreUnreadable": "The selected backup could not be read. Your saved data was not changed.",
+  "@restoreUnreadable": {
+    "description": "Application message: restoreUnreadable"
+  },
+  "restoreMissingPreview": "Select a valid backup and review its preview before restoring.",
+  "@restoreMissingPreview": {
+    "description": "Application message: restoreMissingPreview"
+  },
+  "restoreFailed": "Could not restore backup. Your saved data was not changed.",
+  "@restoreFailed": {
+    "description": "Application message: restoreFailed"
+  },
+  "restoreBusy": "An import is already in progress.",
+  "@restoreBusy": {
+    "description": "Application message: restoreBusy"
+  }
+}

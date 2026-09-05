@@ -28,7 +28,7 @@ class AppDatabase {
 
   final Database raw;
 
-  static const schemaVersion = 1;
+  static const schemaVersion = 2;
 
   T transaction<T>(T Function() action) {
     return _runTransaction('BEGIN IMMEDIATE', action);
@@ -79,11 +79,17 @@ class AppDatabase {
       );
     }
 
-    if (currentVersion == 0) {
+    if (currentVersion < schemaVersion) {
       transaction<void>(() {
-        for (final statement in _schemaVersion1Statements) {
-          raw.execute(statement);
+        if (currentVersion == 0) {
+          for (final statement in _schemaVersion1Statements) {
+            raw.execute(statement);
+          }
         }
+        raw.execute(
+          'CREATE TABLE app_settings ('
+          'key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL)',
+        );
         raw.execute('PRAGMA user_version = $schemaVersion');
       });
     }

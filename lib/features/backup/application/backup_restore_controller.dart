@@ -7,6 +7,8 @@ import 'package:lanjut_nanti/features/backup/domain/backup_restore.dart';
 export 'package:lanjut_nanti/features/backup/data/backup_file_gateway.dart';
 export 'package:lanjut_nanti/features/backup/domain/backup_restore.dart';
 
+enum BackupRestoreFailureReason { unreadable, missingPreview, replacement }
+
 enum BackupRestoreStatus {
   idle,
   busy,
@@ -24,6 +26,8 @@ class BackupRestoreState {
     this.preview,
     this.issues = const [],
     this.message,
+    this.reason,
+    this.failure,
     this.tagCount = 0,
     this.contentCount = 0,
     this.detailCount = 0,
@@ -33,6 +37,8 @@ class BackupRestoreState {
   final BackupRestorePreview? preview;
   final List<BackupValidationIssue> issues;
   final String? message;
+  final BackupRestoreFailureReason? reason;
+  final ApplicationFailure? failure;
   final int tagCount;
   final int contentCount;
   final int detailCount;
@@ -51,6 +57,8 @@ class BackupRestoreResult {
     this.preview,
     this.issues = const [],
     this.message,
+    this.reason,
+    this.failure,
     this.tagCount = 0,
     this.contentCount = 0,
     this.detailCount = 0,
@@ -60,6 +68,8 @@ class BackupRestoreResult {
   final BackupRestorePreview? preview;
   final List<BackupValidationIssue> issues;
   final String? message;
+  final BackupRestoreFailureReason? reason;
+  final ApplicationFailure? failure;
   final int tagCount;
   final int contentCount;
   final int detailCount;
@@ -106,12 +116,17 @@ class BackupRestoreController extends ChangeNotifier {
         return _publishError(
           'The selected backup could not be read. Your saved data was not '
           'changed.',
+          reason: BackupRestoreFailureReason.unreadable,
         );
       }
       return _publishValidation(_validator.validateBytes(bytes));
     } catch (error, stackTrace) {
       final failure = _asRestoreFailure(error, stackTrace);
-      return _publishError(failure.message);
+      return _publishError(
+        failure.message,
+        failure: failure,
+        reason: BackupRestoreFailureReason.unreadable,
+      );
     }
   }
 
@@ -134,6 +149,7 @@ class BackupRestoreController extends ChangeNotifier {
     if (preview == null) {
       return _publishError(
         'Select a valid backup and review its preview before restoring.',
+        reason: BackupRestoreFailureReason.missingPreview,
       );
     }
     if (!confirmed) {
@@ -197,7 +213,7 @@ class BackupRestoreController extends ChangeNotifier {
       );
     } catch (error, stackTrace) {
       final failure = _asRestoreFailure(error, stackTrace);
-      return _publishError(failure.message, preview: preview);
+      return _publishError(failure.message, preview: preview, failure: failure);
     }
   }
 
@@ -256,12 +272,16 @@ class BackupRestoreController extends ChangeNotifier {
   BackupRestoreResult _publishError(
     String message, {
     BackupRestorePreview? preview,
+    BackupRestoreFailureReason reason = BackupRestoreFailureReason.replacement,
+    ApplicationFailure? failure,
   }) {
     _publish(
       BackupRestoreState(
         status: BackupRestoreStatus.error,
         preview: preview,
         message: message,
+        reason: reason,
+        failure: failure,
         tagCount: preview?.tagCount ?? 0,
         contentCount: preview?.contentCount ?? 0,
         detailCount: preview?.detailCount ?? 0,
@@ -271,6 +291,8 @@ class BackupRestoreController extends ChangeNotifier {
       status: BackupRestoreStatus.error,
       preview: preview,
       message: message,
+      reason: reason,
+      failure: failure,
       tagCount: preview?.tagCount ?? 0,
       contentCount: preview?.contentCount ?? 0,
       detailCount: preview?.detailCount ?? 0,
@@ -300,6 +322,9 @@ ApplicationFailure _asRestoreFailure(Object error, StackTrace stackTrace) {
   final failure = mapApplicationFailure(error, operation: 'restore backup');
   return ApplicationFailure(
     kind: failure.kind,
+    operation: failure.operation,
+    code: failure.code,
+    field: failure.field,
     message: failure.message,
     cause: failure.cause,
     stackTrace: failure.stackTrace ?? stackTrace,

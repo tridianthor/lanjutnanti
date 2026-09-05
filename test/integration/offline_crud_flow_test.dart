@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lanjut_nanti/app/app.dart';
+import 'package:lanjut_nanti/features/settings/domain/locale_preference.dart';
 
 import '../support/database_test_support.dart';
 import '../support/phase9_app_support.dart';
@@ -13,7 +14,7 @@ void main() {
   late MutableClock clock;
   late Phase9AppInstance app;
 
-  setUp(() {
+  setUp(() async {
     temporaryDirectory = Directory.systemTemp.createTempSync(
       'lanjut_nanti_phase9_crud_',
     );
@@ -21,6 +22,7 @@ void main() {
         '${temporaryDirectory.path}${Platform.pathSeparator}app.sqlite';
     clock = MutableClock(DateTime.utc(2026, 9, 4, 5));
     app = _openApp(databasePath: databasePath, clock: clock);
+    await app.localeController.load();
   });
 
   tearDown(() {
@@ -34,7 +36,7 @@ void main() {
       await tester.pumpWidget(LanjutNantiApp(dependencies: app.dependencies));
       await tester.pumpAndSettle();
 
-      expect(find.text('Belum ada konten'), findsOneWidget);
+      expect(find.text('No content yet'), findsOneWidget);
       await tester.tap(
         find.widgetWithText(FloatingActionButton, 'Add Content'),
       );
@@ -108,13 +110,23 @@ void main() {
       );
       expect(find.text('Corrected older checkpoint'), findsOneWidget);
 
+      await app.localeController.select(LocalePreference.indonesian);
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(of: firstDetailCard, matching: find.text('Terbaru')),
+        findsOneWidget,
+      );
+
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pumpAndSettle();
       app.dispose();
       app = _openApp(databasePath: databasePath, clock: clock);
+      await app.localeController.load();
 
       await tester.pumpWidget(LanjutNantiApp(dependencies: app.dependencies));
       await tester.pumpAndSettle();
+      expect(find.byTooltip('Bahasa'), findsOneWidget);
+      expect(find.text('Cari konten'), findsOneWidget);
       expect(find.text('Doraemon'), findsOneWidget);
       expect(find.text('Corrected older checkpoint'), findsOneWidget);
 
@@ -132,7 +144,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('content-card-content-1')));
       await tester.pumpAndSettle();
       expect(find.text('Manga'), findsOneWidget);
-      expect(find.text('2 details'), findsOneWidget);
+      expect(find.text('2 detail'), findsOneWidget);
       expect(
         find.text('https://example.com/doraemon/chapter-6-corrected'),
         findsOneWidget,
@@ -142,7 +154,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Corrected older checkpoint'), findsOneWidget);
-      expect(find.text('Latest'), findsOneWidget);
+      expect(find.text('Terbaru'), findsOneWidget);
     },
   );
 }

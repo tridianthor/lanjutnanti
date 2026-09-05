@@ -7,6 +7,7 @@ import 'package:lanjut_nanti/app/app.dart';
 import 'package:lanjut_nanti/features/backup/application/backup_export_controller.dart';
 import 'package:lanjut_nanti/features/backup/application/backup_restore_controller.dart';
 import 'package:lanjut_nanti/features/backup/data/backup_file_gateway.dart';
+import 'package:lanjut_nanti/features/settings/domain/locale_preference.dart';
 
 import '../support/database_test_support.dart';
 import '../support/phase9_app_support.dart';
@@ -22,7 +23,7 @@ void main() {
   late _MemoryExportGateway exportGateway;
   late _MemoryImportGateway importGateway;
 
-  setUp(() {
+  setUp(() async {
     temporaryDirectory = Directory.systemTemp.createTempSync(
       'lanjut_nanti_phase9_backup_',
     );
@@ -51,6 +52,8 @@ void main() {
       idGenerator: SequenceIdGenerator(['old-content']),
       restoreGateway: importGateway,
     );
+    await source.localeController.select(LocalePreference.english);
+    await destination.localeController.select(LocalePreference.indonesian);
     _seedSource(source, sourceClock);
     destination.contentRepository.create(name: 'Old local content');
   });
@@ -74,7 +77,10 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('confirm-export-backup')));
       await tester.pumpAndSettle();
       expect(exportGateway.bytes, isNotNull);
-      expect(jsonDecode(utf8.decode(exportGateway.bytes!)), isA<Map>());
+      final exportedJson =
+          jsonDecode(utf8.decode(exportGateway.bytes!)) as Map<String, dynamic>;
+      expect(exportedJson.containsKey('app_settings'), isFalse);
+      expect(exportedJson.containsKey('locale'), isFalse);
       expect(find.text('Backup exported successfully.'), findsOneWidget);
 
       importGateway.bytes = exportGateway.bytes;
@@ -84,21 +90,32 @@ void main() {
         LanjutNantiApp(dependencies: destination.dependencies),
       );
       await tester.pumpAndSettle();
+      expect(find.byTooltip('Bahasa'), findsOneWidget);
       expect(find.text('Old local content'), findsOneWidget);
 
-      await tester.tap(find.byTooltip('Import backup'));
+      await tester.tap(find.byTooltip('Impor cadangan'));
       await tester.pumpAndSettle();
-      expect(find.text('Replace local data?'), findsOneWidget);
-      expect(find.textContaining('2 details'), findsOneWidget);
+      expect(find.text('Ganti data lokal?'), findsOneWidget);
+      expect(find.textContaining('2 detail'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('confirm-restore-backup')));
       await tester.pumpAndSettle();
 
       expect(find.text('Old local content'), findsNothing);
       expect(find.text('Doraemon'), findsOneWidget);
       expect(
-        find.text('Restored 1 tag, 1 content item, and 2 details.'),
+        find.text('Memulihkan 1 tag, 1 konten, dan 2 detail.'),
         findsOneWidget,
       );
+      expect(
+        destination.localeController.preference,
+        LocalePreference.indonesian,
+      );
+      final destSetting = destination.database.raw.select(
+        "SELECT value FROM app_settings WHERE key = 'app_locale'",
+      );
+      expect(destSetting.single['value'], 'id');
+      expect(find.byTooltip('Bahasa'), findsOneWidget);
+
       expect(destination.tagRepository.list(), hasLength(1));
       expect(destination.contentRepository.listRecent(), hasLength(1));
       expect(
@@ -118,10 +135,10 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('content-card-$_contentId')));
       await tester.pumpAndSettle();
       expect(find.text('Manga'), findsOneWidget);
-      expect(find.text('2 details'), findsOneWidget);
+      expect(find.text('2 detail'), findsOneWidget);
       expect(find.text(_latestLink), findsOneWidget);
       expect(find.text('Continue at chapter two'), findsOneWidget);
-      expect(find.text('Latest'), findsOneWidget);
+      expect(find.text('Terbaru'), findsOneWidget);
     },
   );
 }

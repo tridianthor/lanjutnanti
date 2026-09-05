@@ -197,7 +197,7 @@ void main() {
     expect(reopenedDetail!.note, 'Continue here');
     expect(
       reopened.raw.select('PRAGMA user_version').single['user_version'],
-      1,
+      AppDatabase.schemaVersion,
     );
   });
 }

@@ -1,3 +1,4 @@
+import 'package:lanjut_nanti/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -296,7 +297,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Belum ada konten'), findsOneWidget);
+      expect(find.text('No content yet'), findsOneWidget);
     }
     await tester.binding.setSurfaceSize(null);
   });
@@ -304,6 +305,9 @@ void main() {
 
 Widget _app(Widget home) {
   return MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    locale: const Locale('en'),
     theme: ThemeData(
       colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
       useMaterial3: true,
