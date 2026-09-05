@@ -675,5 +675,26 @@
   "tagRenamed": "Tag renamed.",
   "@tagRenamed": {
     "description": "Feedback after tag rename"
+  },
+  "theme": "Theme",
+  "@theme": {
+    "description": "Theme section title in settings"
+  },
+  "themeLight": "Light",
+  "@themeLight": {
+    "description": "Light theme mode option"
+  },
+  "themeDark": "Dark",
+  "@themeDark": {
+    "description": "Dark theme mode option"
+  },
+  "themePreferenceReadFailed": "Could not read theme preference. Using System default.",
+  "@themePreferenceReadFailed": {
+    "description": "Notice displayed when theme preference cannot be read"
+  },
+  "themePreferenceSaveFailed": "Could not save theme preference.",
+  "@themePreferenceSaveFailed": {
+    "description": "Notice displayed when theme preference cannot be saved"
   }
 }
+

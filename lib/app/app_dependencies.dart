@@ -1,5 +1,7 @@
 import 'package:lanjut_nanti/features/settings/application/locale_controller.dart';
+import 'package:lanjut_nanti/features/settings/application/theme_controller.dart';
 import 'package:lanjut_nanti/features/settings/data/locale_preference_repository.dart';
+import 'package:lanjut_nanti/features/settings/data/theme_preference_repository.dart';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
@@ -24,6 +26,7 @@ class AppDependencies {
     required this.idGenerator,
     this.database,
     this.localeController,
+    this.themeController,
     this.contentController,
     this.tagService,
     this.backupExportController,
@@ -47,6 +50,10 @@ class AppDependencies {
       SqliteLocalePreferenceRepository(database),
     );
     await localeController.load();
+    final themeController = ThemeController(
+      SqliteThemePreferenceRepository(database),
+    );
+    await themeController.load();
     final clock = const SystemClock();
     final idGenerator = RandomIdGenerator();
     final contentRepository = SqliteContentRepository(
@@ -83,6 +90,7 @@ class AppDependencies {
       idGenerator: idGenerator,
       database: database,
       localeController: localeController,
+      themeController: themeController,
       contentController: ContentListController(service: service),
       tagService: TagApplicationService(tagRepository),
       backupExportController: backupExportController,
@@ -91,6 +99,7 @@ class AppDependencies {
   }
 
   final LocaleController? localeController;
+  final ThemeController? themeController;
   final Clock clock;
   final IdGenerator idGenerator;
   final AppDatabase? database;

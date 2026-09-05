@@ -1,6 +1,7 @@
 import 'package:lanjut_nanti/l10n/application_failure_localization.dart';
 import 'package:lanjut_nanti/l10n/app_localizations.dart';
 import 'package:lanjut_nanti/features/settings/application/locale_controller.dart';
+import 'package:lanjut_nanti/features/settings/application/theme_controller.dart';
 import 'package:lanjut_nanti/features/settings/presentation/language_dialog.dart';
 import 'package:lanjut_nanti/features/settings/presentation/settings_screen.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +27,7 @@ class HomeScreen extends StatefulWidget {
     super.key,
     this.controller,
     this.localeController,
+    this.themeController,
     this.tagService,
     this.backupExportController,
     this.backupRestoreController,
@@ -33,6 +35,7 @@ class HomeScreen extends StatefulWidget {
   });
 
   final LocaleController? localeController;
+  final ThemeController? themeController;
   final ContentListController? controller;
   final TagApplicationService? tagService;
   final BackupExportController? backupExportController;
@@ -128,6 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
         builder:
             (context) => SettingsScreen(
               localeController: widget.localeController,
+              themeController: widget.themeController,
               tagService: widget.tagService ?? _tagService,
               backupExportController: widget.backupExportController,
               backupRestoreController: widget.backupRestoreController,
@@ -191,7 +195,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
 
   Widget _buildState(BuildContext context, ContentListState state) {
     return LayoutBuilder(

@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:lanjut_nanti/features/backup/application/backup_export_controller.dart';
 import 'package:lanjut_nanti/features/backup/application/backup_restore_controller.dart';
 import 'package:lanjut_nanti/features/settings/application/locale_controller.dart';
+import 'package:lanjut_nanti/features/settings/application/theme_controller.dart';
 import 'package:lanjut_nanti/features/settings/domain/locale_preference.dart';
+import 'package:lanjut_nanti/features/settings/domain/theme_preference.dart';
 import 'package:lanjut_nanti/features/tags/application/tag_application_service.dart';
 import 'package:lanjut_nanti/features/tags/presentation/tag_management_screen.dart';
 import 'package:lanjut_nanti/l10n/application_failure_localization.dart';
@@ -14,12 +16,14 @@ class SettingsScreen extends StatelessWidget {
   const SettingsScreen({
     super.key,
     this.localeController,
+    this.themeController,
     this.tagService,
     this.backupExportController,
     this.backupRestoreController,
   });
 
   final LocaleController? localeController;
+  final ThemeController? themeController;
   final TagApplicationService? tagService;
   final BackupExportController? backupExportController;
   final BackupRestoreController? backupRestoreController;
@@ -36,40 +40,43 @@ class SettingsScreen extends StatelessWidget {
       child: Focus(
         autofocus: true,
         child: Scaffold(
-          appBar: AppBar(
-            title: Text(l.settings),
+          appBar: AppBar(title: Text(l.settings)),
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              return Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 720),
+                  child: ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      if (localeController != null)
+                        _LanguageSection(controller: localeController!),
+                      if (themeController != null) ...[
+                        if (localeController != null)
+                          const SizedBox(height: 16),
+                        _ThemeSection(controller: themeController!),
+                      ],
+                      if (tagService != null) ...[
+                        const SizedBox(height: 16),
+                        _TagsSection(tagService: tagService!),
+                      ],
+                      if (backupExportController != null ||
+                          backupRestoreController != null) ...[
+                        const SizedBox(height: 16),
+                        _BackupSection(
+                          exportController: backupExportController,
+                          restoreController: backupRestoreController,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  if (localeController != null)
-                    _LanguageSection(controller: localeController!),
-                  if (tagService != null) ...[
-                    const SizedBox(height: 16),
-                    _TagsSection(tagService: tagService!),
-                  ],
-                  if (backupExportController != null ||
-                      backupRestoreController != null) ...[
-                    const SizedBox(height: 16),
-                    _BackupSection(
-                      exportController: backupExportController,
-                      restoreController: backupRestoreController,
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          );
-        },
+        ),
       ),
-    ),
-  ),
-);
+    );
   }
 }
 
@@ -164,13 +171,97 @@ class _LanguageSection extends StatelessWidget {
                     }),
                     value: pref,
                     groupValue: controller.preference,
-                    onChanged: controller.busy
-                        ? null
-                        : (value) {
-                            if (value != null) {
-                              controller.select(value);
-                            }
-                          },
+                    onChanged:
+                        controller.busy
+                            ? null
+                            : (value) {
+                              if (value != null) {
+                                controller.select(value);
+                              }
+                            },
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ThemeSection extends StatelessWidget {
+  const _ThemeSection({required this.controller});
+
+  final ThemeController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return ListenableBuilder(
+      listenable: controller,
+      builder: (context, child) {
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.dark_mode_outlined),
+                    const SizedBox(width: 8),
+                    Text(
+                      l.theme,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ],
+                ),
+                if (controller.failure == ThemePreferenceFailure.read) ...[
+                  const SizedBox(height: 8),
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(
+                        l.themePreferenceReadFailed,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: controller.busy ? null : controller.load,
+                        child: Text(l.retry),
+                      ),
+                    ],
+                  ),
+                ],
+                if (controller.failure == ThemePreferenceFailure.write) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    l.themePreferenceSaveFailed,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 8),
+                for (final pref in ThemePreference.values)
+                  RadioListTile<ThemePreference>(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(switch (pref) {
+                      ThemePreference.system => l.systemDefault,
+                      ThemePreference.light => l.themeLight,
+                      ThemePreference.dark => l.themeDark,
+                    }),
+                    value: pref,
+                    groupValue: controller.preference,
+                    onChanged:
+                        controller.busy
+                            ? null
+                            : (value) {
+                              if (value != null) {
+                                controller.select(value);
+                              }
+                            },
                   ),
               ],
             ),
@@ -182,10 +273,7 @@ class _LanguageSection extends StatelessWidget {
 }
 
 class _BackupSection extends StatelessWidget {
-  const _BackupSection({
-    this.exportController,
-    this.restoreController,
-  });
+  const _BackupSection({this.exportController, this.restoreController});
 
   final BackupExportController? exportController;
   final BackupRestoreController? restoreController;
@@ -239,10 +327,7 @@ class _ExportSubsection extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              l.exportBackup,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
+            Text(l.exportBackup, style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 4),
             Text(
               l.exportDescription,
@@ -252,13 +337,14 @@ class _ExportSubsection extends StatelessWidget {
             FilledButton.icon(
               key: const ValueKey('export-backup-action'),
               onPressed: isBusy ? null : () => _confirmExport(context),
-              icon: isBusy
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.file_upload_outlined),
+              icon:
+                  isBusy
+                      ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                      : const Icon(Icons.file_upload_outlined),
               label: Text(l.export),
             ),
           ],
@@ -271,22 +357,23 @@ class _ExportSubsection extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l.exportBackupTitle),
-        content: Text(l.exportPrivacy),
-        actions: [
-          TextButton(
-            key: const ValueKey('cancel-export-backup'),
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l.cancel),
+      builder:
+          (context) => AlertDialog(
+            title: Text(l.exportBackupTitle),
+            content: Text(l.exportPrivacy),
+            actions: [
+              TextButton(
+                key: const ValueKey('cancel-export-backup'),
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(l.cancel),
+              ),
+              FilledButton(
+                key: const ValueKey('confirm-export-backup'),
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(l.export),
+              ),
+            ],
           ),
-          FilledButton(
-            key: const ValueKey('confirm-export-backup'),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l.export),
-          ),
-        ],
-      ),
     );
 
     if (confirmed != true || !context.mounted) return;
@@ -306,9 +393,10 @@ class _ExportSubsection extends StatelessWidget {
               final message = switch (result.status) {
                 BackupExportStatus.success => loc.exportSuccess,
                 BackupExportStatus.cancelled => loc.exportCancelled,
-                _ => result.failure == null
-                    ? loc.exportFailed
-                    : localizeFailure(loc, result.failure!),
+                _ =>
+                  result.failure == null
+                      ? loc.exportFailed
+                      : localizeFailure(loc, result.failure!),
               };
               return Wrap(
                 crossAxisAlignment: WrapCrossAlignment.center,
@@ -343,10 +431,7 @@ class _RestoreSubsection extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              l.importBackup,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
+            Text(l.importBackup, style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 4),
             Text(
               l.importDescription,
@@ -356,13 +441,14 @@ class _RestoreSubsection extends StatelessWidget {
             FilledButton.icon(
               key: const ValueKey('import-backup-action'),
               onPressed: isBusy ? null : () => _selectRestore(context),
-              icon: isBusy
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.file_download_outlined),
+              icon:
+                  isBusy
+                      ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                      : const Icon(Icons.file_download_outlined),
               label: Text(l.importBackup),
             ),
           ],
@@ -396,28 +482,29 @@ class _RestoreSubsection extends StatelessWidget {
     final preview = result.preview!;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.replaceLocalData),
-        content: Text(
-          AppLocalizations.of(context)!.restorePreview(
-            preview.tagCount,
-            preview.contentCount,
-            preview.detailCount,
+      builder:
+          (dialogContext) => AlertDialog(
+            title: Text(AppLocalizations.of(context)!.replaceLocalData),
+            content: Text(
+              AppLocalizations.of(context)!.restorePreview(
+                preview.tagCount,
+                preview.contentCount,
+                preview.detailCount,
+              ),
+            ),
+            actions: [
+              TextButton(
+                key: const ValueKey('cancel-restore-backup'),
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: Text(AppLocalizations.of(context)!.cancel),
+              ),
+              FilledButton(
+                key: const ValueKey('confirm-restore-backup'),
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: Text(AppLocalizations.of(context)!.replace),
+              ),
+            ],
           ),
-        ),
-        actions: [
-          TextButton(
-            key: const ValueKey('cancel-restore-backup'),
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-          FilledButton(
-            key: const ValueKey('confirm-restore-backup'),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(AppLocalizations.of(context)!.replace),
-          ),
-        ],
-      ),
     );
 
     if (confirmed != true || !context.mounted) return;
@@ -436,23 +523,24 @@ class _RestoreSubsection extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
     await showDialog<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l.backupValidationFailed),
-        content: SingleChildScrollView(
-          child: Text(
-            localizeBackupIssues(
-              AppLocalizations.of(context)!,
-              result.issues,
+      builder:
+          (dialogContext) => AlertDialog(
+            title: Text(l.backupValidationFailed),
+            content: SingleChildScrollView(
+              child: Text(
+                localizeBackupIssues(
+                  AppLocalizations.of(context)!,
+                  result.issues,
+                ),
+              ),
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text(l.close),
+              ),
+            ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(l.close),
-          ),
-        ],
-      ),
     );
   }
 
@@ -460,10 +548,6 @@ class _RestoreSubsection extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(localizeRestoreResult(l, result)),
-        ),
-      );
+      ..showSnackBar(SnackBar(content: Text(localizeRestoreResult(l, result))));
   }
 }

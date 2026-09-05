@@ -130,7 +130,9 @@ void main() {
 
       await tester.tap(find.byKey(const ValueKey('settings-action')));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Ikuti sistem'));
+      await tester.tap(
+        find.widgetWithText(RadioListTile<LocalePreference>, 'Ikuti sistem'),
+      );
       await tester.pumpAndSettle();
 
       expect(controller.preference, LocalePreference.system);
@@ -209,7 +211,13 @@ void main() {
 
         await tester.tap(find.byKey(const ValueKey('settings-action')));
         await tester.pumpAndSettle();
-        expect(find.text('System default'), findsOneWidget);
+        expect(
+          find.widgetWithText(
+            RadioListTile<LocalePreference>,
+            'System default',
+          ),
+          findsOneWidget,
+        );
         expect(find.text('English'), findsOneWidget);
         expect(find.text('Bahasa Indonesia'), findsOneWidget);
 

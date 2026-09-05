@@ -14,8 +14,11 @@ import 'package:lanjut_nanti/features/content/data/content_detail_repository.dar
 import 'package:lanjut_nanti/features/content/data/content_repository.dart';
 import 'package:lanjut_nanti/features/content/presentation/home_screen.dart';
 import 'package:lanjut_nanti/features/settings/application/locale_controller.dart';
+import 'package:lanjut_nanti/features/settings/application/theme_controller.dart';
 import 'package:lanjut_nanti/features/settings/data/locale_preference_repository.dart';
+import 'package:lanjut_nanti/features/settings/data/theme_preference_repository.dart';
 import 'package:lanjut_nanti/features/settings/domain/locale_preference.dart';
+import 'package:lanjut_nanti/features/settings/domain/theme_preference.dart';
 import 'package:lanjut_nanti/features/settings/presentation/settings_screen.dart';
 import 'package:lanjut_nanti/features/tags/application/tag_application_service.dart';
 import 'package:lanjut_nanti/features/tags/data/tag_repository.dart';
@@ -26,6 +29,7 @@ void main() {
   late ContentListController contentController;
   late TagApplicationService tagService;
   late LocaleController localeController;
+  late ThemeController themeController;
   late BackupExportController exportController;
   late BackupRestoreController restoreController;
 
@@ -47,6 +51,7 @@ void main() {
     );
     tagService = TagApplicationService(tagRepository);
     localeController = LocaleController(MemoryLocalePreferenceRepository());
+    themeController = ThemeController(MemoryThemePreferenceRepository());
     exportController = BackupExportController(
       snapshotRepository: SqliteBackupSnapshotRepository(database),
       fileGateway: _DummyExportGateway(),
@@ -61,14 +66,13 @@ void main() {
   tearDown(() {
     contentController.dispose();
     localeController.dispose();
+    themeController.dispose();
     exportController.dispose();
     restoreController.dispose();
     database.dispose();
   });
 
-  Widget buildTestApp({
-    Locale locale = const Locale('en'),
-  }) {
+  Widget buildTestApp({Locale locale = const Locale('en')}) {
     return MaterialApp(
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -76,6 +80,7 @@ void main() {
       home: HomeScreen(
         controller: contentController,
         localeController: localeController,
+        themeController: themeController,
         tagService: tagService,
         backupExportController: exportController,
         backupRestoreController: restoreController,
@@ -92,11 +97,20 @@ void main() {
 
         // CF-001: Settings button is present in AppBar
         expect(find.byKey(const ValueKey('settings-action')), findsOneWidget);
-        expect(find.byKey(const ValueKey('add-content-action')), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('add-content-action')),
+          findsOneWidget,
+        );
 
         // Old action buttons are removed from HomeScreen
-        expect(find.byKey(const ValueKey('export-backup-action')), findsNothing);
-        expect(find.byKey(const ValueKey('import-backup-action')), findsNothing);
+        expect(
+          find.byKey(const ValueKey('export-backup-action')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const ValueKey('import-backup-action')),
+          findsNothing,
+        );
         expect(find.byTooltip('Language'), findsNothing);
       },
     );
@@ -139,14 +153,17 @@ void main() {
         await tester.pumpWidget(
           ListenableBuilder(
             listenable: controller,
-            builder: (context, _) => MaterialApp(
-              locale: controller.preference.languageCode == null
-                  ? null
-                  : Locale(controller.preference.languageCode!),
-              localizationsDelegates: AppLocalizations.localizationsDelegates,
-              supportedLocales: AppLocalizations.supportedLocales,
-              home: SettingsScreen(localeController: controller),
-            ),
+            builder:
+                (context, _) => MaterialApp(
+                  locale:
+                      controller.preference.languageCode == null
+                          ? null
+                          : Locale(controller.preference.languageCode!),
+                  localizationsDelegates:
+                      AppLocalizations.localizationsDelegates,
+                  supportedLocales: AppLocalizations.supportedLocales,
+                  home: SettingsScreen(localeController: controller),
+                ),
           ),
         );
         await tester.pumpAndSettle();
@@ -187,7 +204,9 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.text('Could not read your language preference. Using System default.'),
+          find.text(
+            'Could not read your language preference. Using System default.',
+          ),
           findsOneWidget,
         );
 
@@ -197,7 +216,9 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.text('Could not read your language preference. Using System default.'),
+          find.text(
+            'Could not read your language preference. Using System default.',
+          ),
           findsNothing,
         );
       },
@@ -225,10 +246,122 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.text('Could not save your language preference. Try selecting it again.'),
+          find.text(
+            'Could not save your language preference. Try selecting it again.',
+          ),
           findsOneWidget,
         );
         expect(controller.preference, LocalePreference.english);
+      },
+    );
+  });
+
+  group('Dark mode / Theme settings in SettingsScreen', () {
+    testWidgets('displays theme options and updates preference on selection', (
+      tester,
+    ) async {
+      final repo = _FakeThemeRepo()..preference = ThemePreference.system;
+      final controller = ThemeController(repo);
+      await controller.load();
+      addTearDown(controller.dispose);
+
+      await tester.pumpWidget(
+        ListenableBuilder(
+          listenable: controller,
+          builder:
+              (context, _) => MaterialApp(
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                supportedLocales: AppLocalizations.supportedLocales,
+                home: SettingsScreen(themeController: controller),
+              ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Theme section header and options are displayed
+      expect(find.text('Theme'), findsOneWidget);
+      expect(find.text('System default'), findsOneWidget);
+      expect(find.text('Light'), findsOneWidget);
+      expect(find.text('Dark'), findsOneWidget);
+
+      // Selecting Dark updates controller and repository
+      await tester.tap(find.text('Dark'));
+      await tester.pumpAndSettle();
+
+      expect(controller.preference, ThemePreference.dark);
+      expect(repo.preference, ThemePreference.dark);
+
+      // Selecting Light updates controller and repository
+      await tester.tap(find.text('Light'));
+      await tester.pumpAndSettle();
+
+      expect(controller.preference, ThemePreference.light);
+      expect(repo.preference, ThemePreference.light);
+    });
+
+    testWidgets(
+      'read failure displays retryable notice and retries successfully',
+      (tester) async {
+        final repo = _FakeThemeRepo()..failRead = true;
+        final controller = ThemeController(repo);
+        await controller.load();
+        addTearDown(controller.dispose);
+
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: SettingsScreen(themeController: controller),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text('Could not read theme preference. Using System default.'),
+          findsOneWidget,
+        );
+
+        // Tap Retry after fixing repo
+        repo.failRead = false;
+        await tester.tap(find.widgetWithText(TextButton, 'Retry'));
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text('Could not read theme preference. Using System default.'),
+          findsNothing,
+        );
+        expect(controller.failure, isNull);
+      },
+    );
+
+    testWidgets(
+      'write failure displays localized error and retains prior preference',
+      (tester) async {
+        final repo = _FakeThemeRepo()..preference = ThemePreference.system;
+        final controller = ThemeController(repo);
+        await controller.load();
+        addTearDown(controller.dispose);
+
+        await tester.pumpWidget(
+          ListenableBuilder(
+            listenable: controller,
+            builder:
+                (context, _) => MaterialApp(
+                  localizationsDelegates:
+                      AppLocalizations.localizationsDelegates,
+                  supportedLocales: AppLocalizations.supportedLocales,
+                  home: SettingsScreen(themeController: controller),
+                ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        repo.failWrite = true;
+        await tester.tap(find.text('Dark'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Could not save theme preference.'), findsOneWidget);
+        expect(controller.preference, ThemePreference.system);
       },
     );
   });
@@ -281,39 +414,42 @@ void main() {
       expect(gateway.calls, 0);
     });
 
-    testWidgets('confirming export calls gateway and reports success via SnackBar', (
-      tester,
-    ) async {
-      final gateway = _RecordingExportGateway();
-      final controller = BackupExportController(
-        snapshotRepository: SqliteBackupSnapshotRepository(database),
-        fileGateway: gateway,
-        clock: const SystemClock(),
-      );
-      addTearDown(controller.dispose);
+    testWidgets(
+      'confirming export calls gateway and reports success via SnackBar',
+      (tester) async {
+        final gateway = _RecordingExportGateway();
+        final controller = BackupExportController(
+          snapshotRepository: SqliteBackupSnapshotRepository(database),
+          fileGateway: gateway,
+          clock: const SystemClock(),
+        );
+        addTearDown(controller.dispose);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: SettingsScreen(backupExportController: controller),
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: SettingsScreen(backupExportController: controller),
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const ValueKey('export-backup-action')));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('export-backup-action')));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const ValueKey('confirm-export-backup')));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('confirm-export-backup')));
+        await tester.pumpAndSettle();
 
-      expect(gateway.calls, 1);
-      expect(find.text('Backup exported successfully.'), findsOneWidget);
-    });
+        expect(gateway.calls, 1);
+        expect(find.text('Backup exported successfully.'), findsOneWidget);
+      },
+    );
   });
 
   group('CF-012 & CF-013: Backup restore and data synchronization', () {
-    testWidgets('corrupted backup file shows validation dialog', (tester) async {
+    testWidgets('corrupted backup file shows validation dialog', (
+      tester,
+    ) async {
       final gateway = _RecordingRestoreGateway()..json = '{bad';
       final restoreRepo = _RecordingRestoreRepo();
       final controller = BackupRestoreController(
@@ -347,71 +483,73 @@ void main() {
       expect(restoreRepo.calls, 0);
     });
 
-    testWidgets('valid backup shows preview with counts and cancels without replacing', (
-      tester,
-    ) async {
-      final gateway = _RecordingRestoreGateway()..json = _validRestoreJson;
-      final restoreRepo = _RecordingRestoreRepo();
-      final controller = BackupRestoreController(
-        restoreRepository: restoreRepo,
-        fileGateway: gateway,
-      );
-      addTearDown(controller.dispose);
+    testWidgets(
+      'valid backup shows preview with counts and cancels without replacing',
+      (tester) async {
+        final gateway = _RecordingRestoreGateway()..json = _validRestoreJson;
+        final restoreRepo = _RecordingRestoreRepo();
+        final controller = BackupRestoreController(
+          restoreRepository: restoreRepo,
+          fileGateway: gateway,
+        );
+        addTearDown(controller.dispose);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: SettingsScreen(backupRestoreController: controller),
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: SettingsScreen(backupRestoreController: controller),
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const ValueKey('import-backup-action')));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('import-backup-action')));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Replace local data?'), findsOneWidget);
-      expect(find.textContaining('1 tag'), findsOneWidget);
+        expect(find.text('Replace local data?'), findsOneWidget);
+        expect(find.textContaining('1 tag'), findsOneWidget);
 
-      await tester.tap(find.byKey(const ValueKey('cancel-restore-backup')));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('cancel-restore-backup')));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Replace local data?'), findsNothing);
-      expect(restoreRepo.calls, 0);
-    });
+        expect(find.text('Replace local data?'), findsNothing);
+        expect(restoreRepo.calls, 0);
+      },
+    );
 
-    testWidgets('confirming restore replaces data and reports restored counts', (
-      tester,
-    ) async {
-      final gateway = _RecordingRestoreGateway()..json = _validRestoreJson;
-      final restoreRepo = _RecordingRestoreRepo();
-      final controller = BackupRestoreController(
-        restoreRepository: restoreRepo,
-        fileGateway: gateway,
-      );
-      addTearDown(controller.dispose);
+    testWidgets(
+      'confirming restore replaces data and reports restored counts',
+      (tester) async {
+        final gateway = _RecordingRestoreGateway()..json = _validRestoreJson;
+        final restoreRepo = _RecordingRestoreRepo();
+        final controller = BackupRestoreController(
+          restoreRepository: restoreRepo,
+          fileGateway: gateway,
+        );
+        addTearDown(controller.dispose);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: SettingsScreen(backupRestoreController: controller),
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: SettingsScreen(backupRestoreController: controller),
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const ValueKey('import-backup-action')));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('import-backup-action')));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const ValueKey('confirm-restore-backup')));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('confirm-restore-backup')));
+        await tester.pumpAndSettle();
 
-      expect(restoreRepo.calls, 1);
-      expect(
-        find.text('Restored 1 tag, 1 content item, and 1 detail.'),
-        findsOneWidget,
-      );
-    });
+        expect(restoreRepo.calls, 1);
+        expect(
+          find.text('Restored 1 tag, 1 content item, and 1 detail.'),
+          findsOneWidget,
+        );
+      },
+    );
 
     testWidgets(
       'CF-013: returning to HomeScreen after restore displays restored data immediately',
@@ -460,91 +598,105 @@ void main() {
     );
   });
 
-  group('CF-014, CF-015, CF-016: Responsiveness, keyboard and text scaling', () {
-    testWidgets('renders cleanly on mobile 390x844 without overflow', (tester) async {
-      await tester.binding.setSurfaceSize(const Size(390, 844));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
+  group(
+    'CF-014, CF-015, CF-016: Responsiveness, keyboard and text scaling',
+    () {
+      testWidgets('renders cleanly on mobile 390x844 without overflow', (
+        tester,
+      ) async {
+        await tester.binding.setSurfaceSize(const Size(390, 844));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: SettingsScreen(
-            localeController: localeController,
-            tagService: tagService,
-            backupExportController: exportController,
-            backupRestoreController: restoreController,
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.byType(SettingsScreen), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
-
-    testWidgets('supports Escape key dismissal on desktop', (tester) async {
-      await tester.binding.setSurfaceSize(const Size(1440, 900));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
-
-      await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Navigator(
-            onGenerateRoute: (settings) => MaterialPageRoute<void>(
-              builder: (context) => Scaffold(
-                body: Builder(
-                  builder: (context) => ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (context) => SettingsScreen(
-                            localeController: localeController,
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Text('Open Settings'),
-                  ),
-                ),
-              ),
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: SettingsScreen(
+              localeController: localeController,
+              tagService: tagService,
+              backupExportController: exportController,
+              backupRestoreController: restoreController,
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Open Settings'));
-      await tester.pumpAndSettle();
-      expect(find.byType(SettingsScreen), findsOneWidget);
+        expect(find.byType(SettingsScreen), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
 
-      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-      await tester.pumpAndSettle();
-      expect(find.byType(SettingsScreen), findsNothing);
-    });
+      testWidgets('supports Escape key dismissal on desktop', (tester) async {
+        await tester.binding.setSurfaceSize(const Size(1440, 900));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    testWidgets('renders cleanly at 1.5x text scaling without overflow', (tester) async {
-      tester.binding.platformDispatcher.textScaleFactorTestValue = 1.5;
-      addTearDown(tester.binding.platformDispatcher.clearTextScaleFactorTestValue);
-
-      await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: SettingsScreen(
-            localeController: localeController,
-            tagService: tagService,
-            backupExportController: exportController,
-            backupRestoreController: restoreController,
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Navigator(
+              onGenerateRoute:
+                  (settings) => MaterialPageRoute<void>(
+                    builder:
+                        (context) => Scaffold(
+                          body: Builder(
+                            builder:
+                                (context) => ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute<void>(
+                                        builder:
+                                            (context) => SettingsScreen(
+                                              localeController:
+                                                  localeController,
+                                            ),
+                                      ),
+                                    );
+                                  },
+                                  child: const Text('Open Settings'),
+                                ),
+                          ),
+                        ),
+                  ),
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(tester.takeException(), isNull);
-    });
-  });
+        await tester.tap(find.text('Open Settings'));
+        await tester.pumpAndSettle();
+        expect(find.byType(SettingsScreen), findsOneWidget);
+
+        await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+        await tester.pumpAndSettle();
+        expect(find.byType(SettingsScreen), findsNothing);
+      });
+
+      testWidgets('renders cleanly at 1.5x text scaling without overflow', (
+        tester,
+      ) async {
+        tester.binding.platformDispatcher.textScaleFactorTestValue = 1.5;
+        addTearDown(
+          tester.binding.platformDispatcher.clearTextScaleFactorTestValue,
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: SettingsScreen(
+              localeController: localeController,
+              tagService: tagService,
+              backupExportController: exportController,
+              backupRestoreController: restoreController,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+      });
+    },
+  );
 }
 
 class _FakeLocaleRepo implements LocalePreferenceRepository {
@@ -560,6 +712,24 @@ class _FakeLocaleRepo implements LocalePreferenceRepository {
 
   @override
   Future<void> write(LocalePreference value) async {
+    if (failWrite) throw StateError('write failed');
+    preference = value;
+  }
+}
+
+class _FakeThemeRepo implements ThemePreferenceRepository {
+  ThemePreference preference = ThemePreference.system;
+  bool failRead = false;
+  bool failWrite = false;
+
+  @override
+  Future<ThemePreference> read() async {
+    if (failRead) throw StateError('read failed');
+    return preference;
+  }
+
+  @override
+  Future<void> write(ThemePreference value) async {
     if (failWrite) throw StateError('write failed');
     preference = value;
   }

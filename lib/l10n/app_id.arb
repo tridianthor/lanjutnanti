@@ -142,5 +142,11 @@
   "deleteTagAction": "Hapus tag",
   "tagDeleted": "Tag berhasil dihapus.",
   "tagCreated": "Tag berhasil dibuat.",
-  "tagRenamed": "Tag berhasil diubah namanya."
+  "tagRenamed": "Tag berhasil diubah namanya.",
+  "theme": "Tema",
+  "themeLight": "Terang",
+  "themeDark": "Gelap",
+  "themePreferenceReadFailed": "Tidak dapat membaca preferensi tema. Menggunakan Ikuti sistem.",
+  "themePreferenceSaveFailed": "Tidak dapat menyimpan preferensi tema."
 }
+

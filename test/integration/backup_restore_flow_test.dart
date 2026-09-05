@@ -74,6 +74,12 @@ void main() {
 
       await tester.tap(find.byKey(const ValueKey('settings-action')));
       await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('export-backup-action')),
+        200,
+      );
+      await tester.drag(find.byType(ListView), const Offset(0, -100));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('export-backup-action')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('confirm-export-backup')));
@@ -96,6 +102,12 @@ void main() {
       expect(find.text('Old local content'), findsOneWidget);
 
       await tester.tap(find.byKey(const ValueKey('settings-action')));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('import-backup-action')),
+        200,
+      );
+      await tester.drag(find.byType(ListView), const Offset(0, -100));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('import-backup-action')));
       await tester.pumpAndSettle();
