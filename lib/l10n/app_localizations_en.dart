@@ -165,8 +165,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get history => 'History';
 
   @override
-  String get emptyHistory =>
-      'No details saved yet. Add your first continuation link.';
+  String get emptyHistory => 'No details saved yet. Add your first continuation link.';
 
   @override
   String get latest => 'Latest';
@@ -184,15 +183,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteDetailTitle => 'Delete detail?';
 
   @override
-  String get deleteDetailMessage =>
-      'This saved checkpoint will be removed from history.';
+  String get deleteDetailMessage => 'This saved checkpoint will be removed from history.';
 
   @override
   String get deleteContentTitle => 'Delete content?';
 
   @override
-  String get deleteContentMessage =>
-      'This removes the content and all of its saved history.';
+  String get deleteContentMessage => 'This removes the content and all of its saved history.';
 
   @override
   String get exportBackup => 'Export backup';
@@ -216,16 +213,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backupValidationFailed => 'Backup validation failed';
 
   @override
-  String get languagePreferenceReadFailed =>
-      'Could not read your language preference. Using System default.';
+  String get languagePreferenceReadFailed => 'Could not read your language preference. Using System default.';
 
   @override
-  String get languagePreferenceSaveFailed =>
-      'Could not save your language preference. Try selecting it again.';
+  String get languagePreferenceSaveFailed => 'Could not save your language preference. Try selecting it again.';
 
   @override
-  String get exportPrivacy =>
-      'This backup may contain private links and notes. The destination you choose controls who can access the file.';
+  String get exportPrivacy => 'This backup may contain private links and notes. The destination you choose controls who can access the file.';
 
   @override
   String detailCount(int count) {
@@ -278,8 +272,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get savedReloadFailed =>
-      'The detail was saved, but its content could not be reloaded.';
+  String get savedReloadFailed => 'The detail was saved, but its content could not be reloaded.';
 
   @override
   String get contentNotFound => 'The requested content could not be found.';
@@ -327,8 +320,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportSuccess => 'Backup exported successfully.';
 
   @override
-  String get exportCancelled =>
-      'Export cancelled. Your saved data was not changed.';
+  String get exportCancelled => 'Export cancelled. Your saved data was not changed.';
 
   @override
   String get exportFailed => 'Could not export backup. Please try again.';
@@ -355,15 +347,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get issueOwnershipType => 'Ownership data must be a string or null.';
 
   @override
-  String get issueMissingTag =>
-      'The referenced tag does not exist in this backup.';
+  String get issueMissingTag => 'The referenced tag does not exist in this backup.';
 
   @override
   String get issueContentNameEmpty => 'The content name must not be empty.';
 
   @override
-  String get issueMissingContent =>
-      'The referenced content does not exist in this backup.';
+  String get issueMissingContent => 'The referenced content does not exist in this backup.';
 
   @override
   String get issueAbsoluteLink => 'The link must be a non-empty absolute URI.';
@@ -387,8 +377,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get issueNullableString => 'The value must be a string or null.';
 
   @override
-  String get issueInvalidTimestamp =>
-      'The timestamp must be a valid ISO 8601 timestamp.';
+  String get issueInvalidTimestamp => 'The timestamp must be a valid ISO 8601 timestamp.';
 
   @override
   String issueDuplicateId(String reference) {
@@ -469,20 +458,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get restoreCancelled =>
-      'Import cancelled. Your saved data was not changed.';
+  String get restoreCancelled => 'Import cancelled. Your saved data was not changed.';
 
   @override
-  String get restoreUnreadable =>
-      'The selected backup could not be read. Your saved data was not changed.';
+  String get restoreUnreadable => 'The selected backup could not be read. Your saved data was not changed.';
 
   @override
-  String get restoreMissingPreview =>
-      'Select a valid backup and review its preview before restoring.';
+  String get restoreMissingPreview => 'Select a valid backup and review its preview before restoring.';
 
   @override
-  String get restoreFailed =>
-      'Could not restore backup. Your saved data was not changed.';
+  String get restoreFailed => 'Could not restore backup. Your saved data was not changed.';
 
   @override
   String get restoreBusy => 'An import is already in progress.';
@@ -494,26 +479,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backupAndRestore => 'Backup & Restore';
 
   @override
-  String get exportDescription =>
-      'Save tags, content, and details to a portable JSON file.';
+  String get exportDescription => 'Save tags, content, and details to a portable JSON file.';
 
   @override
-  String get importDescription =>
-      'Restore data from a JSON backup file. This replaces current local data.';
+  String get importDescription => 'Restore data from a JSON backup file. This replaces current local data.';
 
   @override
   String get manageTags => 'Manage tags';
 
   @override
-  String get manageTagsDescription =>
-      'Create, rename, and delete tags for organizing content.';
+  String get manageTagsDescription => 'Create, rename, and delete tags for organizing content.';
 
   @override
   String get emptyTags => 'No tags yet';
 
   @override
-  String get emptyTagsHint =>
-      'Create tags to categorize and filter your saved content.';
+  String get emptyTagsHint => 'Create tags to categorize and filter your saved content.';
 
   @override
   String get renameTag => 'Rename tag';
@@ -525,8 +506,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteTagTitle => 'Delete tag?';
 
   @override
-  String get deleteTagMessage =>
-      'Content assigned to this tag will become untagged.';
+  String get deleteTagMessage => 'Content assigned to this tag will become untagged.';
 
   @override
   String get deleteTagAction => 'Delete tag';
@@ -550,8 +530,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeDark => 'Dark';
 
   @override
-  String get themePreferenceReadFailed =>
-      'Could not read theme preference. Using System default.';
+  String get themePreferenceReadFailed => 'Could not read theme preference. Using System default.';
 
   @override
   String get themePreferenceSaveFailed => 'Could not save theme preference.';

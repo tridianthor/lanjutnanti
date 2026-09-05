@@ -45,15 +45,13 @@ class AppLocalizationsId extends AppLocalizations {
   String get tryAgainMessage => 'Silakan coba lagi.';
 
   @override
-  String get emptyContentHint =>
-      'Simpan sesuatu yang ingin Anda lanjutkan nanti.';
+  String get emptyContentHint => 'Simpan sesuatu yang ingin Anda lanjutkan nanti.';
 
   @override
   String get noSearchResults => 'Tidak ada hasil pencarian';
 
   @override
-  String get noContentMatches =>
-      'Tidak ada konten yang cocok dengan pencarian Anda.';
+  String get noContentMatches => 'Tidak ada konten yang cocok dengan pencarian Anda.';
 
   @override
   String get clearSearch => 'Hapus pencarian';
@@ -167,8 +165,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get history => 'Riwayat';
 
   @override
-  String get emptyHistory =>
-      'Belum ada detail tersimpan. Tambahkan tautan lanjut pertama Anda.';
+  String get emptyHistory => 'Belum ada detail tersimpan. Tambahkan tautan lanjut pertama Anda.';
 
   @override
   String get latest => 'Terbaru';
@@ -186,15 +183,13 @@ class AppLocalizationsId extends AppLocalizations {
   String get deleteDetailTitle => 'Hapus detail?';
 
   @override
-  String get deleteDetailMessage =>
-      'Titik lanjut tersimpan ini akan dihapus dari riwayat.';
+  String get deleteDetailMessage => 'Titik lanjut tersimpan ini akan dihapus dari riwayat.';
 
   @override
   String get deleteContentTitle => 'Hapus konten?';
 
   @override
-  String get deleteContentMessage =>
-      'Konten beserta seluruh riwayat tersimpannya akan dihapus.';
+  String get deleteContentMessage => 'Konten beserta seluruh riwayat tersimpannya akan dihapus.';
 
   @override
   String get exportBackup => 'Ekspor cadangan';
@@ -218,16 +213,13 @@ class AppLocalizationsId extends AppLocalizations {
   String get backupValidationFailed => 'Validasi cadangan gagal';
 
   @override
-  String get languagePreferenceReadFailed =>
-      'Tidak dapat membaca preferensi bahasa. Mengikuti sistem.';
+  String get languagePreferenceReadFailed => 'Tidak dapat membaca preferensi bahasa. Mengikuti sistem.';
 
   @override
-  String get languagePreferenceSaveFailed =>
-      'Tidak dapat menyimpan preferensi bahasa. Coba pilih lagi.';
+  String get languagePreferenceSaveFailed => 'Tidak dapat menyimpan preferensi bahasa. Coba pilih lagi.';
 
   @override
-  String get exportPrivacy =>
-      'Cadangan ini mungkin berisi tautan dan catatan pribadi. Lokasi yang Anda pilih menentukan siapa yang dapat mengakses berkas.';
+  String get exportPrivacy => 'Cadangan ini mungkin berisi tautan dan catatan pribadi. Lokasi yang Anda pilih menentukan siapa yang dapat mengakses berkas.';
 
   @override
   String detailCount(int count) {
@@ -273,8 +265,7 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String get savedReloadFailed =>
-      'Detail telah disimpan, tetapi kontennya tidak dapat dimuat ulang.';
+  String get savedReloadFailed => 'Detail telah disimpan, tetapi kontennya tidak dapat dimuat ulang.';
 
   @override
   String get contentNotFound => 'Konten yang diminta tidak ditemukan.';
@@ -322,12 +313,10 @@ class AppLocalizationsId extends AppLocalizations {
   String get exportSuccess => 'Cadangan berhasil diekspor.';
 
   @override
-  String get exportCancelled =>
-      'Ekspor dibatalkan. Data tersimpan Anda tidak berubah.';
+  String get exportCancelled => 'Ekspor dibatalkan. Data tersimpan Anda tidak berubah.';
 
   @override
-  String get exportFailed =>
-      'Tidak dapat mengekspor cadangan. Silakan coba lagi.';
+  String get exportFailed => 'Tidak dapat mengekspor cadangan. Silakan coba lagi.';
 
   @override
   String get issueInvalidUtf8 => 'Berkas bukan JSON UTF-8 yang valid.';
@@ -336,8 +325,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get issueInvalidJson => 'Berkas bukan JSON yang valid.';
 
   @override
-  String get issueRootObject =>
-      'Tingkat teratas cadangan harus berupa objek JSON.';
+  String get issueRootObject => 'Tingkat teratas cadangan harus berupa objek JSON.';
 
   @override
   String get issueSchemaVersion => 'Hanya skema versi 1 yang didukung.';
@@ -349,23 +337,19 @@ class AppLocalizationsId extends AppLocalizations {
   String get issueTagNameEmpty => 'Nama tag tidak boleh kosong.';
 
   @override
-  String get issueOwnershipType =>
-      'Data kepemilikan harus berupa teks atau null.';
+  String get issueOwnershipType => 'Data kepemilikan harus berupa teks atau null.';
 
   @override
-  String get issueMissingTag =>
-      'Tag yang dirujuk tidak ada dalam cadangan ini.';
+  String get issueMissingTag => 'Tag yang dirujuk tidak ada dalam cadangan ini.';
 
   @override
   String get issueContentNameEmpty => 'Nama konten tidak boleh kosong.';
 
   @override
-  String get issueMissingContent =>
-      'Konten yang dirujuk tidak ada dalam cadangan ini.';
+  String get issueMissingContent => 'Konten yang dirujuk tidak ada dalam cadangan ini.';
 
   @override
-  String get issueAbsoluteLink =>
-      'Tautan harus berupa URI absolut yang tidak kosong.';
+  String get issueAbsoluteLink => 'Tautan harus berupa URI absolut yang tidak kosong.';
 
   @override
   String get issueArrayRequired => 'Array JSON wajib diisi.';
@@ -380,15 +364,13 @@ class AppLocalizationsId extends AppLocalizations {
   String get issueStringRequired => 'Nilai teks wajib diisi.';
 
   @override
-  String get issueNullableRequired =>
-      'Kolom wajib ada dan boleh bernilai null.';
+  String get issueNullableRequired => 'Kolom wajib ada dan boleh bernilai null.';
 
   @override
   String get issueNullableString => 'Nilai harus berupa teks atau null.';
 
   @override
-  String get issueInvalidTimestamp =>
-      'Waktu harus berupa waktu ISO 8601 yang valid.';
+  String get issueInvalidTimestamp => 'Waktu harus berupa waktu ISO 8601 yang valid.';
 
   @override
   String issueDuplicateId(String reference) {
@@ -421,20 +403,16 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String get restoreCancelled =>
-      'Impor dibatalkan. Data tersimpan Anda tidak berubah.';
+  String get restoreCancelled => 'Impor dibatalkan. Data tersimpan Anda tidak berubah.';
 
   @override
-  String get restoreUnreadable =>
-      'Cadangan yang dipilih tidak dapat dibaca. Data tersimpan Anda tidak berubah.';
+  String get restoreUnreadable => 'Cadangan yang dipilih tidak dapat dibaca. Data tersimpan Anda tidak berubah.';
 
   @override
-  String get restoreMissingPreview =>
-      'Pilih cadangan yang valid dan tinjau pratinjaunya sebelum memulihkan.';
+  String get restoreMissingPreview => 'Pilih cadangan yang valid dan tinjau pratinjaunya sebelum memulihkan.';
 
   @override
-  String get restoreFailed =>
-      'Tidak dapat memulihkan cadangan. Data tersimpan Anda tidak berubah.';
+  String get restoreFailed => 'Tidak dapat memulihkan cadangan. Data tersimpan Anda tidak berubah.';
 
   @override
   String get restoreBusy => 'Impor sedang berlangsung.';
@@ -446,26 +424,22 @@ class AppLocalizationsId extends AppLocalizations {
   String get backupAndRestore => 'Cadangan & Pemulihan';
 
   @override
-  String get exportDescription =>
-      'Simpan tag, konten, dan detail ke berkas JSON portabel.';
+  String get exportDescription => 'Simpan tag, konten, dan detail ke berkas JSON portabel.';
 
   @override
-  String get importDescription =>
-      'Pulihkan data dari berkas cadangan JSON. Ini menggantikan data lokal saat ini.';
+  String get importDescription => 'Pulihkan data dari berkas cadangan JSON. Ini menggantikan data lokal saat ini.';
 
   @override
   String get manageTags => 'Kelola tag';
 
   @override
-  String get manageTagsDescription =>
-      'Buat, ganti nama, dan hapus tag untuk mengatur konten.';
+  String get manageTagsDescription => 'Buat, ganti nama, dan hapus tag untuk mengatur konten.';
 
   @override
   String get emptyTags => 'Belum ada tag';
 
   @override
-  String get emptyTagsHint =>
-      'Buat tag untuk mengelompokkan dan memfilter konten tersimpan Anda.';
+  String get emptyTagsHint => 'Buat tag untuk mengelompokkan dan memfilter konten tersimpan Anda.';
 
   @override
   String get renameTag => 'Ganti nama tag';
@@ -477,8 +451,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get deleteTagTitle => 'Hapus tag?';
 
   @override
-  String get deleteTagMessage =>
-      'Konten dengan tag ini tidak akan dihapus, tetapi tidak lagi memiliki tag.';
+  String get deleteTagMessage => 'Konten dengan tag ini tidak akan dihapus, tetapi tidak lagi memiliki tag.';
 
   @override
   String get deleteTagAction => 'Hapus tag';
@@ -502,10 +475,8 @@ class AppLocalizationsId extends AppLocalizations {
   String get themeDark => 'Gelap';
 
   @override
-  String get themePreferenceReadFailed =>
-      'Tidak dapat membaca preferensi tema. Menggunakan Ikuti sistem.';
+  String get themePreferenceReadFailed => 'Tidak dapat membaca preferensi tema. Menggunakan Ikuti sistem.';
 
   @override
-  String get themePreferenceSaveFailed =>
-      'Tidak dapat menyimpan preferensi tema.';
+  String get themePreferenceSaveFailed => 'Tidak dapat menyimpan preferensi tema.';
 }
