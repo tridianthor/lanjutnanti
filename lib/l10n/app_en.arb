@@ -611,5 +611,69 @@
   "restoreBusy": "An import is already in progress.",
   "@restoreBusy": {
     "description": "Application message: restoreBusy"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings screen title and action tooltip"
+  },
+  "backupAndRestore": "Backup & Restore",
+  "@backupAndRestore": {
+    "description": "Backup and restore section title in settings"
+  },
+  "exportDescription": "Save tags, content, and details to a portable JSON file.",
+  "@exportDescription": {
+    "description": "Description of export backup action in settings"
+  },
+  "importDescription": "Restore data from a JSON backup file. This replaces current local data.",
+  "@importDescription": {
+    "description": "Description of import backup action in settings"
+  },
+  "manageTags": "Manage tags",
+  "@manageTags": {
+    "description": "Manage tags screen title and settings tile"
+  },
+  "manageTagsDescription": "Create, rename, and delete tags for organizing content.",
+  "@manageTagsDescription": {
+    "description": "Description of manage tags action in settings"
+  },
+  "emptyTags": "No tags yet",
+  "@emptyTags": {
+    "description": "Title when no tags exist in tag management"
+  },
+  "emptyTagsHint": "Create tags to categorize and filter your saved content.",
+  "@emptyTagsHint": {
+    "description": "Hint when no tags exist in tag management"
+  },
+  "renameTag": "Rename tag",
+  "@renameTag": {
+    "description": "Action to rename an existing tag"
+  },
+  "rename": "Rename",
+  "@rename": {
+    "description": "Confirm button label in rename tag dialog"
+  },
+  "deleteTagTitle": "Delete tag?",
+  "@deleteTagTitle": {
+    "description": "Title of delete tag confirmation dialog"
+  },
+  "deleteTagMessage": "Content assigned to this tag will become untagged.",
+  "@deleteTagMessage": {
+    "description": "Confirmation message when deleting a tag"
+  },
+  "deleteTagAction": "Delete tag",
+  "@deleteTagAction": {
+    "description": "Tooltip and action label for deleting a tag"
+  },
+  "tagDeleted": "Tag deleted.",
+  "@tagDeleted": {
+    "description": "Feedback after tag deletion"
+  },
+  "tagCreated": "Tag created.",
+  "@tagCreated": {
+    "description": "Feedback after tag creation"
+  },
+  "tagRenamed": "Tag renamed.",
+  "@tagRenamed": {
+    "description": "Feedback after tag rename"
   }
 }

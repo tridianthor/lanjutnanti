@@ -471,4 +471,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get restoreBusy => 'An import is already in progress.';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get backupAndRestore => 'Backup & Restore';
+
+  @override
+  String get exportDescription => 'Save tags, content, and details to a portable JSON file.';
+
+  @override
+  String get importDescription => 'Restore data from a JSON backup file. This replaces current local data.';
+
+  @override
+  String get manageTags => 'Manage tags';
+
+  @override
+  String get manageTagsDescription => 'Create, rename, and delete tags for organizing content.';
+
+  @override
+  String get emptyTags => 'No tags yet';
+
+  @override
+  String get emptyTagsHint => 'Create tags to categorize and filter your saved content.';
+
+  @override
+  String get renameTag => 'Rename tag';
+
+  @override
+  String get rename => 'Rename';
+
+  @override
+  String get deleteTagTitle => 'Delete tag?';
+
+  @override
+  String get deleteTagMessage => 'Content assigned to this tag will become untagged.';
+
+  @override
+  String get deleteTagAction => 'Delete tag';
+
+  @override
+  String get tagDeleted => 'Tag deleted.';
+
+  @override
+  String get tagCreated => 'Tag created.';
+
+  @override
+  String get tagRenamed => 'Tag renamed.';
 }

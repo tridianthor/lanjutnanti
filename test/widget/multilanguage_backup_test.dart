@@ -43,7 +43,9 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Export backup'));
+      await tester.tap(find.byKey(const ValueKey('settings-action')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('export-backup-action')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('confirm-export-backup')));
       await tester.pump();
@@ -77,7 +79,9 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Impor cadangan'));
+      await tester.tap(find.byKey(const ValueKey('settings-action')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('import-backup-action')));
       await tester.pumpAndSettle();
       expect(
         find.textContaining('file: Berkas bukan JSON yang valid.'),
@@ -115,7 +119,9 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Impor cadangan'));
+    await tester.tap(find.byKey(const ValueKey('settings-action')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('import-backup-action')));
     await tester.pumpAndSettle();
     expect(
       find.textContaining(

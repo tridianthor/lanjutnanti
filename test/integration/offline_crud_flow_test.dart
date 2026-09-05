@@ -125,7 +125,7 @@ void main() {
 
       await tester.pumpWidget(LanjutNantiApp(dependencies: app.dependencies));
       await tester.pumpAndSettle();
-      expect(find.byTooltip('Bahasa'), findsOneWidget);
+      expect(find.byTooltip('Pengaturan'), findsOneWidget);
       expect(find.text('Cari konten'), findsOneWidget);
       expect(find.text('Doraemon'), findsOneWidget);
       expect(find.text('Corrected older checkpoint'), findsOneWidget);

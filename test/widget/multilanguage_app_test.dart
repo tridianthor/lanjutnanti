@@ -14,12 +14,14 @@ void main() {
   testWidgets('selecting Indonesian updates the home screen', (tester) async {
     await tester.pumpWidget(const LanjutNantiApp());
     await tester.pumpAndSettle();
-    expect(find.byTooltip('Language'), findsOneWidget);
-    await tester.tap(find.byTooltip('Language'));
+    expect(find.byKey(const ValueKey('settings-action')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('settings-action')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Bahasa Indonesia'));
     await tester.pumpAndSettle();
-    expect(find.byTooltip('Bahasa'), findsOneWidget);
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Pengaturan'), findsOneWidget);
     expect(find.text('Cari konten'), findsOneWidget);
     expect(find.text('Belum ada konten'), findsOneWidget);
   });
@@ -65,7 +67,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    await tester.tap(find.byTooltip('Language'));
+    await tester.tap(find.byKey(const ValueKey('settings-action')));
     await tester.pumpAndSettle();
     repo.failWrite = true;
     await tester.tap(find.text('Bahasa Indonesia'));
@@ -80,8 +82,10 @@ void main() {
     repo.failWrite = false;
     await tester.tap(find.text('Bahasa Indonesia'));
     await tester.pumpAndSettle();
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
     expect(find.byType(AlertDialog), findsNothing);
-    expect(find.byTooltip('Bahasa'), findsOneWidget);
+    expect(find.byTooltip('Pengaturan'), findsOneWidget);
   });
 
   testWidgets(
@@ -121,22 +125,24 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byTooltip('Bahasa'), findsOneWidget);
+      expect(find.byTooltip('Pengaturan'), findsOneWidget);
       expect(find.text('Belum ada konten'), findsOneWidget);
 
-      await tester.tap(find.byTooltip('Bahasa'));
+      await tester.tap(find.byKey(const ValueKey('settings-action')));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Ikuti sistem'));
       await tester.pumpAndSettle();
 
       expect(controller.preference, LocalePreference.system);
       expect(repo.preference, LocalePreference.system);
-      expect(find.byTooltip('Language'), findsOneWidget);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Settings'), findsOneWidget);
       expect(find.text('No content yet'), findsOneWidget);
 
       tester.binding.platformDispatcher.localesTestValue = [const Locale('id')];
       await tester.pumpAndSettle();
-      expect(find.byTooltip('Bahasa'), findsOneWidget);
+      expect(find.byTooltip('Pengaturan'), findsOneWidget);
       expect(find.text('Belum ada konten'), findsOneWidget);
     },
   );
@@ -151,9 +157,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Manga'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Language'));
+    await tester.tap(find.byKey(const ValueKey('settings-action')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Bahasa Indonesia'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
 
     expect(find.text('Manga'), findsOneWidget);
@@ -190,7 +198,7 @@ void main() {
       ('mobile 390x844', const Size(390, 844)),
       ('desktop 1440x900', const Size(1440, 900)),
     ]) {
-      testWidgets('language dialog and forms are usable at ${entry.$1}', (
+      testWidgets('language settings and forms are usable at ${entry.$1}', (
         tester,
       ) async {
         await tester.binding.setSurfaceSize(entry.$2);
@@ -199,16 +207,14 @@ void main() {
         await tester.pumpWidget(const LanjutNantiApp());
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byTooltip('Language'));
+        await tester.tap(find.byKey(const ValueKey('settings-action')));
         await tester.pumpAndSettle();
-        expect(find.byType(AlertDialog), findsOneWidget);
         expect(find.text('System default'), findsOneWidget);
         expect(find.text('English'), findsOneWidget);
         expect(find.text('Bahasa Indonesia'), findsOneWidget);
 
-        await tester.tap(find.text('Cancel'));
+        await tester.tap(find.byType(BackButton));
         await tester.pumpAndSettle();
-        expect(find.byType(AlertDialog), findsNothing);
 
         await tester.tap(find.byTooltip('Add Content'));
         await tester.pumpAndSettle();
@@ -220,7 +226,7 @@ void main() {
       });
     }
 
-    testWidgets('language dialog supports Escape key dismissal on desktop', (
+    testWidgets('settings screen supports Escape key dismissal on desktop', (
       tester,
     ) async {
       await tester.binding.setSurfaceSize(const Size(1440, 900));
@@ -229,13 +235,13 @@ void main() {
       await tester.pumpWidget(const LanjutNantiApp());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byTooltip('Language'));
+      await tester.tap(find.byKey(const ValueKey('settings-action')));
       await tester.pumpAndSettle();
-      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(find.text('Settings'), findsOneWidget);
 
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pumpAndSettle();
-      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.text('Settings'), findsNothing);
     });
 
     testWidgets(
@@ -249,15 +255,15 @@ void main() {
         await tester.pumpWidget(const LanjutNantiApp());
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byTooltip('Language'));
+        await tester.tap(find.byKey(const ValueKey('settings-action')));
         await tester.pumpAndSettle();
-        expect(find.byType(AlertDialog), findsOneWidget);
         expect(find.text('Bahasa Indonesia'), findsOneWidget);
 
         await tester.tap(find.text('Bahasa Indonesia'));
         await tester.pumpAndSettle();
-        expect(find.byType(AlertDialog), findsNothing);
-        expect(find.byTooltip('Bahasa'), findsOneWidget);
+        await tester.tap(find.byType(BackButton));
+        await tester.pumpAndSettle();
+        expect(find.byTooltip('Pengaturan'), findsOneWidget);
       },
     );
   });

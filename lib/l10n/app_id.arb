@@ -126,5 +126,21 @@
   "restoreUnreadable": "Cadangan yang dipilih tidak dapat dibaca. Data tersimpan Anda tidak berubah.",
   "restoreMissingPreview": "Pilih cadangan yang valid dan tinjau pratinjaunya sebelum memulihkan.",
   "restoreFailed": "Tidak dapat memulihkan cadangan. Data tersimpan Anda tidak berubah.",
-  "restoreBusy": "Impor sedang berlangsung."
+  "restoreBusy": "Impor sedang berlangsung.",
+  "settings": "Pengaturan",
+  "backupAndRestore": "Cadangan & Pemulihan",
+  "exportDescription": "Simpan tag, konten, dan detail ke berkas JSON portabel.",
+  "importDescription": "Pulihkan data dari berkas cadangan JSON. Ini menggantikan data lokal saat ini.",
+  "manageTags": "Kelola tag",
+  "manageTagsDescription": "Buat, ganti nama, dan hapus tag untuk mengatur konten.",
+  "emptyTags": "Belum ada tag",
+  "emptyTagsHint": "Buat tag untuk mengelompokkan dan memfilter konten tersimpan Anda.",
+  "renameTag": "Ganti nama tag",
+  "rename": "Ganti nama",
+  "deleteTagTitle": "Hapus tag?",
+  "deleteTagMessage": "Konten dengan tag ini tidak akan dihapus, tetapi tidak lagi memiliki tag.",
+  "deleteTagAction": "Hapus tag",
+  "tagDeleted": "Tag berhasil dihapus.",
+  "tagCreated": "Tag berhasil dibuat.",
+  "tagRenamed": "Tag berhasil diubah namanya."
 }

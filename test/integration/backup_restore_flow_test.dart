@@ -72,7 +72,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byTooltip('Export backup'));
+      await tester.tap(find.byKey(const ValueKey('settings-action')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('export-backup-action')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('confirm-export-backup')));
       await tester.pumpAndSettle();
@@ -90,22 +92,27 @@ void main() {
         LanjutNantiApp(dependencies: destination.dependencies),
       );
       await tester.pumpAndSettle();
-      expect(find.byTooltip('Bahasa'), findsOneWidget);
+      expect(find.byTooltip('Pengaturan'), findsOneWidget);
       expect(find.text('Old local content'), findsOneWidget);
 
-      await tester.tap(find.byTooltip('Impor cadangan'));
+      await tester.tap(find.byKey(const ValueKey('settings-action')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('import-backup-action')));
       await tester.pumpAndSettle();
       expect(find.text('Ganti data lokal?'), findsOneWidget);
       expect(find.textContaining('2 detail'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('confirm-restore-backup')));
       await tester.pumpAndSettle();
 
-      expect(find.text('Old local content'), findsNothing);
-      expect(find.text('Doraemon'), findsOneWidget);
       expect(
         find.text('Memulihkan 1 tag, 1 konten, dan 2 detail.'),
         findsOneWidget,
       );
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Old local content'), findsNothing);
+      expect(find.text('Doraemon'), findsOneWidget);
       expect(
         destination.localeController.preference,
         LocalePreference.indonesian,
@@ -114,7 +121,7 @@ void main() {
         "SELECT value FROM app_settings WHERE key = 'app_locale'",
       );
       expect(destSetting.single['value'], 'id');
-      expect(find.byTooltip('Bahasa'), findsOneWidget);
+      expect(find.byTooltip('Pengaturan'), findsOneWidget);
 
       expect(destination.tagRepository.list(), hasLength(1));
       expect(destination.contentRepository.listRecent(), hasLength(1));

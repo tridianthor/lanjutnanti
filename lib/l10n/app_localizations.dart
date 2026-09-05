@@ -856,6 +856,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'An import is already in progress.'**
   String get restoreBusy;
+
+  /// Settings screen title and action tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// Backup and restore section title in settings
+  ///
+  /// In en, this message translates to:
+  /// **'Backup & Restore'**
+  String get backupAndRestore;
+
+  /// Description of export backup action in settings
+  ///
+  /// In en, this message translates to:
+  /// **'Save tags, content, and details to a portable JSON file.'**
+  String get exportDescription;
+
+  /// Description of import backup action in settings
+  ///
+  /// In en, this message translates to:
+  /// **'Restore data from a JSON backup file. This replaces current local data.'**
+  String get importDescription;
+
+  /// Manage tags screen title and settings tile
+  ///
+  /// In en, this message translates to:
+  /// **'Manage tags'**
+  String get manageTags;
+
+  /// Description of manage tags action in settings
+  ///
+  /// In en, this message translates to:
+  /// **'Create, rename, and delete tags for organizing content.'**
+  String get manageTagsDescription;
+
+  /// Title when no tags exist in tag management
+  ///
+  /// In en, this message translates to:
+  /// **'No tags yet'**
+  String get emptyTags;
+
+  /// Hint when no tags exist in tag management
+  ///
+  /// In en, this message translates to:
+  /// **'Create tags to categorize and filter your saved content.'**
+  String get emptyTagsHint;
+
+  /// Action to rename an existing tag
+  ///
+  /// In en, this message translates to:
+  /// **'Rename tag'**
+  String get renameTag;
+
+  /// Confirm button label in rename tag dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get rename;
+
+  /// Title of delete tag confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Delete tag?'**
+  String get deleteTagTitle;
+
+  /// Confirmation message when deleting a tag
+  ///
+  /// In en, this message translates to:
+  /// **'Content assigned to this tag will become untagged.'**
+  String get deleteTagMessage;
+
+  /// Tooltip and action label for deleting a tag
+  ///
+  /// In en, this message translates to:
+  /// **'Delete tag'**
+  String get deleteTagAction;
+
+  /// Feedback after tag deletion
+  ///
+  /// In en, this message translates to:
+  /// **'Tag deleted.'**
+  String get tagDeleted;
+
+  /// Feedback after tag creation
+  ///
+  /// In en, this message translates to:
+  /// **'Tag created.'**
+  String get tagCreated;
+
+  /// Feedback after tag rename
+  ///
+  /// In en, this message translates to:
+  /// **'Tag renamed.'**
+  String get tagRenamed;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

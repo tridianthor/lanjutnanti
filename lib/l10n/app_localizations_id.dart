@@ -416,4 +416,52 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get restoreBusy => 'Impor sedang berlangsung.';
+
+  @override
+  String get settings => 'Pengaturan';
+
+  @override
+  String get backupAndRestore => 'Cadangan & Pemulihan';
+
+  @override
+  String get exportDescription => 'Simpan tag, konten, dan detail ke berkas JSON portabel.';
+
+  @override
+  String get importDescription => 'Pulihkan data dari berkas cadangan JSON. Ini menggantikan data lokal saat ini.';
+
+  @override
+  String get manageTags => 'Kelola tag';
+
+  @override
+  String get manageTagsDescription => 'Buat, ganti nama, dan hapus tag untuk mengatur konten.';
+
+  @override
+  String get emptyTags => 'Belum ada tag';
+
+  @override
+  String get emptyTagsHint => 'Buat tag untuk mengelompokkan dan memfilter konten tersimpan Anda.';
+
+  @override
+  String get renameTag => 'Ganti nama tag';
+
+  @override
+  String get rename => 'Ganti nama';
+
+  @override
+  String get deleteTagTitle => 'Hapus tag?';
+
+  @override
+  String get deleteTagMessage => 'Konten dengan tag ini tidak akan dihapus, tetapi tidak lagi memiliki tag.';
+
+  @override
+  String get deleteTagAction => 'Hapus tag';
+
+  @override
+  String get tagDeleted => 'Tag berhasil dihapus.';
+
+  @override
+  String get tagCreated => 'Tag berhasil dibuat.';
+
+  @override
+  String get tagRenamed => 'Tag berhasil diubah namanya.';
 }

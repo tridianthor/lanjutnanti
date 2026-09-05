@@ -1,8 +1,8 @@
-import 'package:lanjut_nanti/l10n/backup_message_localization.dart';
 import 'package:lanjut_nanti/l10n/application_failure_localization.dart';
 import 'package:lanjut_nanti/l10n/app_localizations.dart';
 import 'package:lanjut_nanti/features/settings/application/locale_controller.dart';
 import 'package:lanjut_nanti/features/settings/presentation/language_dialog.dart';
+import 'package:lanjut_nanti/features/settings/presentation/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lanjut_nanti/core/database/app_database.dart';
@@ -122,19 +122,38 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _openSettings() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder:
+            (context) => SettingsScreen(
+              localeController: widget.localeController,
+              tagService: widget.tagService ?? _tagService,
+              backupExportController: widget.backupExportController,
+              backupRestoreController: widget.backupRestoreController,
+            ),
+      ),
+    );
+    if (mounted) {
+      await _loadContent();
+      await _loadTags();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Lanjut Nanti'),
         actions: [
-          if (widget.localeController != null)
-            LanguageAction(controller: widget.localeController!),
-          if (widget.backupExportController != null)
-            _buildBackupAction(widget.backupExportController!),
-          if (widget.backupRestoreController != null)
-            _buildRestoreAction(widget.backupRestoreController!),
           IconButton(
+            key: const ValueKey('settings-action'),
+            onPressed: _openSettings,
+            icon: const Icon(Icons.settings),
+            tooltip: AppLocalizations.of(context)!.settings,
+          ),
+          IconButton(
+            key: const ValueKey('add-content-action'),
             onPressed: _openCreateContent,
             icon: const Icon(Icons.add),
             tooltip: AppLocalizations.of(context)!.addContent,
@@ -173,201 +192,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildBackupAction(BackupExportController controller) {
-    return AnimatedBuilder(
-      animation: controller,
-      builder:
-          (context, child) => IconButton(
-            key: const ValueKey('export-backup-action'),
-            onPressed: controller.state.isBusy ? null : _confirmExport,
-            tooltip: AppLocalizations.of(context)!.exportBackup,
-            icon:
-                controller.state.isBusy
-                    ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                    : const Icon(Icons.file_upload_outlined),
-          ),
-    );
-  }
-
-  Future<void> _confirmExport() async {
-    final controller = widget.backupExportController;
-    if (controller == null || controller.state.isBusy) return;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(AppLocalizations.of(context)!.exportBackupTitle),
-            content: Text(AppLocalizations.of(context)!.exportPrivacy),
-            actions: [
-              TextButton(
-                key: const ValueKey('cancel-export-backup'),
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text(AppLocalizations.of(context)!.cancel),
-              ),
-              FilledButton(
-                key: const ValueKey('confirm-export-backup'),
-                onPressed: () => Navigator.of(context).pop(true),
-                child: Text(AppLocalizations.of(context)!.export),
-              ),
-            ],
-          ),
-    );
-    if (confirmed != true || !mounted) return;
-
-    final result = await controller.export();
-    if (!mounted || result.status == BackupExportStatus.duplicate) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Builder(
-            builder: (context) {
-              final l = AppLocalizations.of(context)!;
-              final message = switch (result.status) {
-                BackupExportStatus.success => l.exportSuccess,
-                BackupExportStatus.cancelled => l.exportCancelled,
-                _ =>
-                  result.failure == null
-                      ? l.exportFailed
-                      : localizeFailure(l, result.failure!),
-              };
-              return Wrap(
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  Text(message),
-                  if (result.status == BackupExportStatus.error)
-                    TextButton(onPressed: _confirmExport, child: Text(l.retry)),
-                ],
-              );
-            },
-          ),
-        ),
-      );
-  }
-
-  Widget _buildRestoreAction(BackupRestoreController controller) {
-    return AnimatedBuilder(
-      animation: controller,
-      builder:
-          (context, child) => IconButton(
-            key: const ValueKey('import-backup-action'),
-            onPressed: controller.state.isBusy ? null : _selectRestore,
-            tooltip: AppLocalizations.of(context)!.importBackup,
-            icon:
-                controller.state.isBusy
-                    ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                    : const Icon(Icons.file_download_outlined),
-          ),
-    );
-  }
-
-  Future<void> _selectRestore() async {
-    final controller = widget.backupRestoreController;
-    if (controller == null || controller.state.isBusy) return;
-
-    final result = await controller.selectAndValidate();
-    if (!mounted || result.status == BackupRestoreStatus.duplicate) return;
-    if (result.status == BackupRestoreStatus.validationError) {
-      await _showRestoreValidation(result);
-      return;
-    }
-    if (result.status == BackupRestoreStatus.error) {
-      if (result.message != null) _showRestoreMessage(result);
-      return;
-    }
-    if (result.status != BackupRestoreStatus.preview ||
-        result.preview == null) {
-      if (result.message != null) {
-        _showRestoreMessage(result);
-      }
-      return;
-    }
-
-    final preview = result.preview!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(AppLocalizations.of(context)!.replaceLocalData),
-            content: Text(
-              AppLocalizations.of(context)!.restorePreview(
-                preview.tagCount,
-                preview.contentCount,
-                preview.detailCount,
-              ),
-            ),
-            actions: [
-              TextButton(
-                key: const ValueKey('cancel-restore-backup'),
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text(AppLocalizations.of(context)!.cancel),
-              ),
-              FilledButton(
-                key: const ValueKey('confirm-restore-backup'),
-                onPressed: () => Navigator.of(context).pop(true),
-                child: Text(AppLocalizations.of(context)!.replace),
-              ),
-            ],
-          ),
-    );
-    if (confirmed != true || !mounted) return;
-
-    final restored = await controller.restore(confirmed: true);
-    if (!mounted || restored.status == BackupRestoreStatus.duplicate) return;
-    if (restored.status == BackupRestoreStatus.success) {
-      await _loadContent();
-      await _loadTags();
-    }
-    if (restored.message != null) _showRestoreMessage(restored);
-  }
-
-  Future<void> _showRestoreValidation(BackupRestoreResult result) async {
-    await showDialog<void>(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(AppLocalizations.of(context)!.backupValidationFailed),
-            content: SingleChildScrollView(
-              child: Text(
-                localizeBackupIssues(
-                  AppLocalizations.of(context)!,
-                  result.issues,
-                ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(AppLocalizations.of(context)!.close),
-              ),
-            ],
-          ),
-    );
-  }
-
-  void _showRestoreMessage(BackupRestoreResult result) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Builder(
-            builder:
-                (context) => Text(
-                  localizeRestoreResult(AppLocalizations.of(context)!, result),
-                ),
-          ),
-        ),
-      );
-  }
 
   Widget _buildState(BuildContext context, ContentListState state) {
     return LayoutBuilder(

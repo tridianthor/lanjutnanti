@@ -84,7 +84,9 @@ void main() {
     await tester.pumpAndSettle();
 
     gateway.result = const BackupFileReadResult.cancelled();
-    await tester.tap(find.byTooltip('Import backup'));
+    await tester.tap(find.byKey(const ValueKey('settings-action')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('import-backup-action')));
     await tester.pumpAndSettle();
     expect(
       find.text('Import cancelled. Your saved data was not changed.'),
@@ -92,7 +94,7 @@ void main() {
     );
 
     gateway.result = BackupFileReadResult.selected(utf8.encode('{bad'));
-    await tester.tap(find.byTooltip('Import backup'));
+    await tester.tap(find.byKey(const ValueKey('import-backup-action')));
     await tester.pumpAndSettle();
     expect(find.text('Backup validation failed'), findsOneWidget);
     expect(find.byKey(const ValueKey('confirm-restore-backup')), findsNothing);
@@ -113,7 +115,7 @@ void main() {
 
     await _confirmExport(tester, settle: false);
     await tester.pump();
-    final action = tester.widget<IconButton>(
+    final action = tester.widget<ButtonStyleButton>(
       find.byKey(const ValueKey('export-backup-action')),
     );
     expect(action.onPressed, isNull);
@@ -139,9 +141,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Import backup'));
+    await tester.tap(find.byKey(const ValueKey('settings-action')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('import-backup-action')));
     await tester.pump();
-    final action = tester.widget<IconButton>(
+    final action = tester.widget<ButtonStyleButton>(
       find.byKey(const ValueKey('import-backup-action')),
     );
     expect(action.onPressed, isNull);
@@ -168,12 +172,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Import backup'));
+    await tester.tap(find.byKey(const ValueKey('settings-action')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('import-backup-action')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('confirm-restore-backup')));
     await tester.pump();
 
-    final action = tester.widget<IconButton>(
+    final action = tester.widget<ButtonStyleButton>(
       find.byKey(const ValueKey('import-backup-action')),
     );
     expect(action.onPressed, isNull);
@@ -216,7 +222,11 @@ Widget _app(
 }
 
 Future<void> _confirmExport(WidgetTester tester, {bool settle = true}) async {
-  await tester.tap(find.byTooltip('Export backup'));
+  if (find.byKey(const ValueKey('settings-action')).evaluate().isNotEmpty) {
+    await tester.tap(find.byKey(const ValueKey('settings-action')));
+    await tester.pumpAndSettle();
+  }
+  await tester.tap(find.byKey(const ValueKey('export-backup-action')));
   await tester.pumpAndSettle();
   await tester.tap(find.byKey(const ValueKey('confirm-export-backup')));
   if (settle) await tester.pumpAndSettle();

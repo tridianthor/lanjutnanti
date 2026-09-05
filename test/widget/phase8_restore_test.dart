@@ -64,7 +64,9 @@ void main() {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Import backup'));
+    await tester.tap(find.byKey(const ValueKey('settings-action')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('import-backup-action')));
     await tester.pumpAndSettle();
 
     expect(find.text('Replace local data?'), findsOneWidget);
@@ -81,7 +83,9 @@ void main() {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Import backup'));
+    await tester.tap(find.byKey(const ValueKey('settings-action')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('import-backup-action')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('confirm-restore-backup')));
     await tester.pumpAndSettle();
@@ -100,7 +104,9 @@ void main() {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Import backup'));
+    await tester.tap(find.byKey(const ValueKey('settings-action')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('import-backup-action')));
     await tester.pumpAndSettle();
 
     expect(find.text('Backup validation failed'), findsOneWidget);

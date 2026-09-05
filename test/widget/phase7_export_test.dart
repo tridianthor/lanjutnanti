@@ -72,7 +72,9 @@ void main() {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Export backup'));
+    await tester.tap(find.byKey(const ValueKey('settings-action')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('export-backup-action')));
     await tester.pumpAndSettle();
 
     expect(find.text('Export backup?'), findsOneWidget);
@@ -97,7 +99,9 @@ void main() {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Export backup'));
+    await tester.tap(find.byKey(const ValueKey('settings-action')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('export-backup-action')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('confirm-export-backup')));
     await tester.pumpAndSettle();
